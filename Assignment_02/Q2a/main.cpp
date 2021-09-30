@@ -300,11 +300,13 @@ static void onDisplay()
 	// scaleMat.InitScaleTransform(0.03f,0.03f,0.03f);
 	// transform=scaleMat*transform;
 
-	//   translateMat.InitTranslationTransform(-0.5,-0.5,0);
-	//   transform=translateMat*transform;
+
 	  
-	  rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),1);
+	  rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),3.15);
 	  transform=rotateMat*transform;
+
+	  	  translateMat.InitTranslationTransform(0.5,0.5,0);
+	  transform=translateMat*transform;
 
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transform.m[0][0]);
 	glDrawElements(GL_TRIANGLES, noOfIndices * 3, GL_UNSIGNED_INT, nullptr);
