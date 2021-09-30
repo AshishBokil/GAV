@@ -10,9 +10,9 @@ out float Scalar;
 void main()
 {  
     
-    gl_Position =gWorld* vec4(aPos, 1.0);
+    gl_Position = vec4(aPos, 1.0);
     // gl_Position = vec4(0.5 * aPos, 1.0);
     // FragPos = vec3(gl_Position);
-     Scalar = aScalar;
+    Scalar = aScalar;
     
 }

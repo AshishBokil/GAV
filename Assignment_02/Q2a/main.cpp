@@ -95,7 +95,7 @@ static void CreateVertexBuffer()
 {
 	FILE *input;
 	unsigned int x, y, z;
-	// input = fopen("testdata.txt", "r");
+	//  input = fopen("testdata.txt", "r");
 	input = fopen("out.txt", "r");
 	if (input == NULL)
 	{
@@ -113,7 +113,7 @@ static void CreateVertexBuffer()
 	float *vertices = new float[noOfvertices * 4];
 
 	noOfIndices = 2 * (x - 1) * (y - 1);
-	cout << noOfIndices << endl;
+	cout << "noOfIndices: " << noOfIndices << endl;
 	unsigned int *indices = new unsigned int[noOfIndices * 3];
 
 	for (int k = 0; k < z; k++)
@@ -123,9 +123,9 @@ static void CreateVertexBuffer()
 			for (int i = 0; i < x; i++)
 			{
 				ll pos = k * y * x + j * x + i;
-				vertices[4 * pos + 0] = (float)i / x;
-				vertices[4 * pos + 1] = (float)j / y;
-				vertices[4 * pos + 2] = (float)k / z;
+				vertices[4 * pos + 0] = (float)i / (x-1);
+				vertices[4 * pos + 1] = (float)j / (y-1);
+				vertices[4 * pos + 2] = (float)k / (z-1);
 				fscanf(input, "%f", &vertices[4 * pos + 3]);
 			}
 		}
@@ -140,7 +140,7 @@ static void CreateVertexBuffer()
 	// }	
 
 	float zincr = (float)1 / z;	
-	float slice = 0.67;
+	float slice = 0.5;
 	int k = slice / zincr;
 	if (slice == 1)
 		k--;
@@ -150,10 +150,10 @@ static void CreateVertexBuffer()
 	{
 		for (int i = 0; i < x - 1; i++)
 		{
-			indices[c++] = (i + x * j + x * y * k);
+			indices[c++] = (i + x * j + x * y * k);			///lower triangle
 			indices[c++] = ((i + 1) + x * j + x * y * k);
 			indices[c++] = ((i + 1) + x * (j + 1) + x * y * k);
-			indices[c++] = (i + x * j + x * y * k);
+			indices[c++] = (i + x * j + x * y * k);			///upper triangle
 			indices[c++] = (i + x * (j + 1) + x * y * k);
 			indices[c++] = ((i + 1) + x * (j + 1) + x * y * k);
 		}
@@ -166,18 +166,16 @@ static void CreateVertexBuffer()
 	// 		cout << endl;
 	// }
 
-	// exit(0);
+	//  exit(0);
 
 	GL_CALL(glGenBuffers(1, &VBO));
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
 	GL_CALL(glBufferData(GL_ARRAY_BUFFER, noOfvertices * 4 * sizeof(float), vertices, GL_STATIC_DRAW));
 
 	GL_CALL(glEnableVertexAttribArray(0));
-	//GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
 	GL_CALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 4 * sizeof(float), 0));
 
 	GL_CALL(glEnableVertexAttribArray(1));
-	//GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
 	GL_CALL(glVertexAttribPointer(1, 1, GL_FLOAT, GL_TRUE, 4 * sizeof(float), (void *)(3 * sizeof(float))));
 
 	GL_CALL(glGenBuffers(1, &IBO));
@@ -305,8 +303,9 @@ static void onDisplay()
 	  translateMat.InitTranslationTransform(-0.5,-0.5,0);
 	  transform=translateMat*transform;
 	  
+
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transform.m[0][0]);
-	glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, nullptr);
+	glDrawElements(GL_TRIANGLES, noOfIndices * 3, GL_UNSIGNED_INT, nullptr);
 
 	/* check for any errors when rendering */
 	GLenum errorCode = glGetError();
@@ -529,4 +528,34 @@ int main(int argc, char **argv)
 // 0
 // 255
 // 255
+// 0
+
+
+// 3 3 3
+// 255
+// 0
+// 0
+// 255
+// 0
+// 255
+// 255
+// 0
+// 255
+// 0
+// 0
+// 255
+// 0
+// 255
+// 255
+// 0
+// 255
+// 0
+// 0
+// 255
+// 0
+// 255
+// 255
+// 0
+// 255
+// 0
 // 0
