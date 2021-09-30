@@ -12,6 +12,8 @@
 #include "math_utils.h"
 #include <assert.h>
 #include "OFFReader.c"
+
+#define ll long long int
 /********************************************************************/
 /*   Variables */
 
@@ -20,15 +22,15 @@ int theWindowWidth = 1500, theWindowHeight = 1000;
 int theWindowPositionX = 40, theWindowPositionY = 40;
 bool isFullScreen = true;
 bool isAnimating = true;
-float rotation = 0.00f,rotateLight=0.00f;
+float rotation = 0.00f, rotateLight = 0.00f;
 float translation = 0.2f;
 float nextX = 0.f, nextY = 0.0f;
 float x = 0.0f, y = -1.0f;
-int choicelight = 0,choice=0;
+int choicelight = 0, choice = 0;
 //int noOfPoints=500000;
 GLuint VBO, VAO, IBO, IAO;
 GLuint gWorldLocation, lightpos_location, view_location;
-unsigned int noVertices = 0, noOfIndices = 0;
+ll noVertices = 0, noOfIndices = 0;
 /*model*/
 OffModel *model;
 /* Constants */
@@ -89,80 +91,89 @@ void computeFPS()
 	}
 }
 
-
 static void CreateVertexBuffer()
 {
 	FILE *input;
-	unsigned int x,y,z;
-	input=fopen("out.txt","r");
-	if(input==NULL){
-		cout<<"error opening file";
+	unsigned int x, y, z;
+	input = fopen("testdata.txt", "r");
+	if (input == NULL)
+	{
+		cout << "error opening file";
 		exit(0);
 	}
 	fscanf(input, "%d", &x);
 	fscanf(input, "%d", &y);
 	fscanf(input, "%d", &z);
-	float vertices[x*y*z][4];
-	float zincr=(float)1/z;
-	float yincr=1/y;
-	float xincr=1/x;
+	cout << x << " " << y << " " << z << endl;
 
-	for(int k=0;k<z;k++){
-		for(int j=0;j<y;j++){
-			for(int i=0;i<x;i++){
-				long long int pos=k*y*x+j*x+i;
-				cout<<pos<<endl;
-				vertices[pos][0]=(float)i/x;
-				vertices[pos][1]=(float)j/y;
-				vertices[pos][2]=(float)k/z;
-				fscanf(input,"%f",&vertices[pos][3]);
+	ll noOfvertices = x * y * z;
+	cout << noOfvertices << endl;
 
+	float *vertices = new float[noOfvertices * 4];
+
+	ll noOfIndices = 2 * (x - 1) * (y - 1);
+	cout << noOfIndices << endl;
+	unsigned int *indices = new unsigned int[noOfIndices * 3];
+
+	float zincr = (float)1 / z;
+
+	for (int k = 0; k < z; k++)
+	{
+		for (int j = 0; j < y; j++)
+		{
+			for (int i = 0; i < x; i++)
+			{
+				ll pos = k * y * x + j * x + i;
+				// cout<<pos<<endl;
+				vertices[4 * pos + 0] = (float)i / x;
+				vertices[4 * pos + 1] = (float)j / y;
+				vertices[4 * pos + 2] = (float)k / z;
+				fscanf(input, "%f", &vertices[4 * pos + 3]);
 			}
 		}
 	}
 
-	unsigned int indices[3*x*y*z];
+	for (int i = 0; i < x * y * z; i++)
+	{
+		cout << setw(12) << (vertices[4 * i + 0]) << " "
+			 << setw(12) << (vertices[4 * i + 1]) << " "
+			 << setw(12) << (vertices[4 * i + 2]) << " : "
+			 << setw(12) << (vertices[4 * i + 3]) << " " << endl;
+	}	
+
+	//unsigned int indices[3*x*y*z];
 	//noOfIndices=3*x*y*z;
-	unsigned int c=0;
-	float slice=0.6;
-	 int k=slice/zincr;
-	if(slice==1)k--;
+	unsigned int c = 0;
+	float slice = 0;
+	int k = slice / zincr;
+	if (slice == 1)
+		k--;
 	//cout<<zincr<<" "<<k<<endl;
-	for(int j=0;j<y-1;j++){
-		for(int i=0;i<x-1;i++){
-				indices[c++]=i+x*j+x*y*k;
-				indices[c++]=(i+1)+x*j+x*y*k;
-				indices[c++]=(i+1)+x*(j+1)+x*y*k;
-
-				indices[c++]=i+x*j+x*y*k;
-				indices[c++]=i+x*(j+1)+x*y*k;
-				indices[c++]=(i+1)+x*(j+1)+x*y*k;
-
-			}
+	for (int j = 0; j < y - 1; j++)
+	{
+		for (int i = 0; i < x - 1; i++)
+		{
+			indices[c++] = (i + x * j + x * y * k);
+			indices[c++] = ((i + 1) + x * j + x * y * k);
+			indices[c++] = ((i + 1) + x * (j + 1) + x * y * k);
+			indices[c++] = (i + x * j + x * y * k);
+			indices[c++] = (i + x * (j + 1) + x * y * k);
+			indices[c++] = ((i + 1) + x * (j + 1) + x * y * k);
 		}
+	}
 
-	noOfIndices=c;
+	for (int i = 0; i < 3 * noOfIndices; i++)
+	{
+		cout << indices[i] << " ";
+		if (i % 3 == 2)
+			cout << endl;
+	}
 
-
-	// for(int i=0;i<c;i++){
-	// 	cout<<indices[i]<<" ";
-	// 	if(i%3==2)cout<<endl;
-	// }
-
-	// // exit(0);
-
-	// for (int i = 0; i < x*y*z; i++)
-	// {
-	// 	cout << setw(5) << (vertices[i][0])<< "  "
-	// 		 << setw(5) << (vertices[i][1])<< " "
-	// 		 << setw(5) << (vertices[i][2])<< " "
-	// 		 << setw(5) << (vertices[i][3])<< " " << endl;
-	// }
-	// exit(0);
+	exit(0);
 
 	GL_CALL(glGenBuffers(1, &VBO));
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
-	GL_CALL(glBufferData(GL_ARRAY_BUFFER, x*y*z* 4 * sizeof(float), vertices, GL_STATIC_DRAW));
+	GL_CALL(glBufferData(GL_ARRAY_BUFFER, noOfvertices * 4 * sizeof(float), vertices, GL_STATIC_DRAW));
 
 	GL_CALL(glEnableVertexAttribArray(0));
 	//GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
@@ -174,7 +185,7 @@ static void CreateVertexBuffer()
 
 	GL_CALL(glGenBuffers(1, &IBO));
 	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO));
-	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, c * sizeof(unsigned int), indices, GL_STATIC_DRAW));
+	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 3 * noOfIndices * sizeof(unsigned int), indices, GL_STATIC_DRAW));
 
 	// GL_CALL(glBindVertexArray(0));
 	// GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, 0));
@@ -287,7 +298,7 @@ static void onDisplay()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//glPointSize(5);
 
-	Matrix4f transform, scaleMat, translateMat,rotateMat, rotateMatlight,lightMat;
+	Matrix4f transform, scaleMat, translateMat, rotateMat, rotateMatlight, lightMat;
 
 	// for object
 	transform.InitIdentity();
@@ -298,9 +309,6 @@ static void onDisplay()
 	//  transform=translateMat*transform;
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transform.m[0][0]);
 	glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, nullptr);
-
-	
-	
 
 	/* check for any errors when rendering */
 	GLenum errorCode = glGetError();
@@ -389,16 +397,20 @@ static void onAlphaNumericKeyPress(unsigned char key, int x, int y)
 		break;
 		/* reset */
 	case '1':
-		if(choicelight!=1)choicelight=1;
-		else choicelight=0;
+		if (choicelight != 1)
+			choicelight = 1;
+		else
+			choicelight = 0;
 		//rotateLight+=1;
 		break;
 
 	case '2':
-		if(choice!=2){
-			choice=2;
+		if (choice != 2)
+		{
+			choice = 2;
 		}
-		else choice=0;
+		else
+			choice = 0;
 		break;
 
 	case 'r':
@@ -510,3 +522,13 @@ int main(int argc, char **argv)
 
 	return 0;
 }
+
+// 3 3 2
+// 255
+// 0
+// 0
+// 255
+// 0
+// 255
+// 255
+// 0
