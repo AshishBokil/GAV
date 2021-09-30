@@ -30,7 +30,7 @@ int choicelight = 0, choice = 0;
 //int noOfPoints=500000;
 GLuint VBO, VAO, IBO, IAO;
 GLuint gWorldLocation, lightpos_location, view_location;
-ll noVertices = 0, noOfIndices = 0;
+unsigned long noOfvertices, noOfIndices;
 /*model*/
 OffModel *model;
 /* Constants */
@@ -95,7 +95,8 @@ static void CreateVertexBuffer()
 {
 	FILE *input;
 	unsigned int x, y, z;
-	input = fopen("testdata.txt", "r");
+	// input = fopen("testdata.txt", "r");
+	input = fopen("out.txt", "r");
 	if (input == NULL)
 	{
 		cout << "error opening file";
@@ -106,16 +107,14 @@ static void CreateVertexBuffer()
 	fscanf(input, "%d", &z);
 	cout << x << " " << y << " " << z << endl;
 
-	ll noOfvertices = x * y * z;
+	noOfvertices = x * y * z;
 	cout << noOfvertices << endl;
 
 	float *vertices = new float[noOfvertices * 4];
 
-	ll noOfIndices = 2 * (x - 1) * (y - 1);
+	noOfIndices = 2 * (x - 1) * (y - 1);
 	cout << noOfIndices << endl;
 	unsigned int *indices = new unsigned int[noOfIndices * 3];
-
-	float zincr = (float)1 / z;
 
 	for (int k = 0; k < z; k++)
 	{
@@ -124,7 +123,6 @@ static void CreateVertexBuffer()
 			for (int i = 0; i < x; i++)
 			{
 				ll pos = k * y * x + j * x + i;
-				// cout<<pos<<endl;
 				vertices[4 * pos + 0] = (float)i / x;
 				vertices[4 * pos + 1] = (float)j / y;
 				vertices[4 * pos + 2] = (float)k / z;
@@ -133,22 +131,21 @@ static void CreateVertexBuffer()
 		}
 	}
 
-	for (int i = 0; i < x * y * z; i++)
-	{
-		cout << setw(12) << (vertices[4 * i + 0]) << " "
-			 << setw(12) << (vertices[4 * i + 1]) << " "
-			 << setw(12) << (vertices[4 * i + 2]) << " : "
-			 << setw(12) << (vertices[4 * i + 3]) << " " << endl;
-	}	
+	// for (int i = 0; i < x * y * z; i++)
+	// {
+	// 	cout << setw(12) << (vertices[4 * i + 0]) << " "
+	// 		 << setw(12) << (vertices[4 * i + 1]) << " "
+	// 		 << setw(12) << (vertices[4 * i + 2]) << " : "
+	// 		 << setw(12) << (vertices[4 * i + 3]) << " " << endl;
+	// }	
 
-	//unsigned int indices[3*x*y*z];
-	//noOfIndices=3*x*y*z;
-	unsigned int c = 0;
-	float slice = 0;
+	float zincr = (float)1 / z;	
+	float slice = 0.67;
 	int k = slice / zincr;
 	if (slice == 1)
 		k--;
-	//cout<<zincr<<" "<<k<<endl;
+
+	unsigned int c = 0;
 	for (int j = 0; j < y - 1; j++)
 	{
 		for (int i = 0; i < x - 1; i++)
@@ -162,14 +159,14 @@ static void CreateVertexBuffer()
 		}
 	}
 
-	for (int i = 0; i < 3 * noOfIndices; i++)
-	{
-		cout << indices[i] << " ";
-		if (i % 3 == 2)
-			cout << endl;
-	}
+	// for (int i = 0; i < 3 * noOfIndices; i++)
+	// {
+	// 	cout << indices[i] << " ";
+	// 	if (i % 3 == 2)
+	// 		cout << endl;
+	// }
 
-	exit(0);
+	// exit(0);
 
 	GL_CALL(glGenBuffers(1, &VBO));
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
