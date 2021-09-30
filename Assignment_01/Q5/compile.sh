@@ -1,0 +1,1 @@
+g++ -g main.cpp -lGL -lGLEW -lglut -lm -fsanitize=address,undefined -o sample
