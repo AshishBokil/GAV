@@ -302,8 +302,9 @@ static void onDisplay()
 	// scaleMat.InitScaleTransform(0.03f,0.03f,0.03f);
 	// transform=scaleMat*transform;
 
-	//  translateMat.InitTranslationTransform(0.0,-0.6,0);
-	//  transform=translateMat*transform;
+	  translateMat.InitTranslationTransform(-0.5,-0.5,0);
+	  transform=translateMat*transform;
+	  
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transform.m[0][0]);
 	glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, nullptr);
 
@@ -520,7 +521,7 @@ int main(int argc, char **argv)
 	return 0;
 }
 
-// 3 3 2
+// 2 2 2
 // 255
 // 0
 // 0
