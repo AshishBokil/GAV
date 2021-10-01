@@ -145,12 +145,16 @@ static void find_triangles(ll th[]){
 				v2=Vector4f(	vertices[4*th[j]],vertices[4*th[j]+1],vertices[4*th[j]+2]	,vertices[4*th[j]+3]);
 				//v3=Vector4f(	vertices[4*th[k]],vertices[4*th[k]+1],vertices[4*th[k]+2]	,vertices[4*th[k]+3]);
 				// cout<<4*th[i]<<" "<<4*th[j]<<" "<<endl;
-				// cout<<"v1="<<v1.x<<" "<<v1.y<<" "<<v1.z<<" :"<<v1.w<<endl;
-				// cout<<"v2="<<v2.x<<" "<<v2.y<<" "<<v2.z<<" :"<<v2.w<<endl;
-				//cout<<"v3="<<v3.x<<" "<<v3.y<<" "<<v3.z<<" :"<<v3.w<<endl;
+				//  cout<<"v1="<<v1.x<<" "<<v1.y<<" "<<v1.z<<" :"<<v1.w<<endl;
+				//  cout<<"v2="<<v2.x<<" "<<v2.y<<" "<<v2.z<<" :"<<v2.w<<endl;
+				
 				if(	v1.w >=v && v2.w<v || v1.w<v && v2.w>=v){
-					temp[count++]=result(v1,v2);
+					temp[count]=result(v1,v2);
 					//count++;
+					//  cout<<"v1="<<v1.x<<" "<<v1.y<<" "<<v1.z<<" :"<<v1.w<<endl;
+				 	// cout<<"v2="<<v2.x<<" "<<v2.y<<" "<<v2.z<<" :"<<v2.w<<endl;
+					// cout<<"result="<<temp[count].x<<" "<<temp[count].y<<" "<<temp[count].z<<" :"<<endl;
+					count++;
 				}
 				// if( v2.w >=v && v3.w<v || v2.w<v && v3.w>=v){
 				// 	temp[count++]=result(v2,v3);
@@ -227,7 +231,7 @@ static void CreateVertexBuffer()
 {
 	FILE *input;
 	unsigned int x, y, z;
-	input = fopen("out.txt", "r");
+	input = fopen("testdata.txt", "r");
 	if (input == NULL)
 	{
 		cout << "error opening file";
