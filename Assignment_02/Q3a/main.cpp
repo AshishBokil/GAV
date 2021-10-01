@@ -91,6 +91,21 @@ void computeFPS()
 	}
 }
 
+ll v=50;
+
+static float result(float a,float b,float sa,float sb){
+		float ratio=v/(sa+sb);
+		float diff=b-a;
+		float ans;
+		if(sa>sb){
+			ans= b-ratio*diff;
+		}
+		else ans=a+ratio*diff;
+		
+		//cout<<a<<" "<<b<<""<<"ans="<<ans<<endl;
+		return ans;
+}
+
 static void CreateVertexBuffer()
 {
 	FILE *input;
@@ -107,7 +122,7 @@ static void CreateVertexBuffer()
 	cout << x << " " << y << " " << z << endl;
 
 	noOfvertices = x * y * z;
-	cout << noOfvertices << endl;
+	//cout << noOfvertices << endl;
 
 	float *vertices = new float[noOfvertices * 4];
 
@@ -140,7 +155,7 @@ static void CreateVertexBuffer()
 		k--;
 	float *newVertices = new float[noOfvertices * 3];
 	unsigned int *indices = new unsigned int[noOfIndices * 4];
-	ll v=50;
+	
 	ll newVIndex=0;
 	//cout<<newVIndex<<endl;
 	for (int j = 0; j < y - 1; j++)
@@ -160,21 +175,19 @@ static void CreateVertexBuffer()
 			// cout<<v0<<" "<<v1<<" "<<v2<<" "<<v3<<endl;
 			//// lower triangle
 			if(	vertices[v0+3]>=v && vertices[v1+3]<v || vertices[v0+3]<v && vertices[v1+3]>=v){
-				newVertices[3*newVIndex+0]=	(vertices[v0+0]+vertices[v1+0])/2 ;
-				newVertices[3*newVIndex+1]=	(vertices[v0+1]+vertices[v1+1])/2 ;
-				//newVertices[3*newVIndex+2]=	(vertices[v0+2]+vertices[v1+2])/2 ;
+				newVertices[3*newVIndex+0]=	result(vertices[v0+0],vertices[v1+0],vertices[v0+3],vertices[v1+3]) ;
+				newVertices[3*newVIndex+1]=	result(vertices[v0+1],vertices[v1+1],vertices[v0+3],vertices[v1+3]) ;
 				newVertices[3*newVIndex+2]=	vertices[v0+2] ;
 				
 				indices[newVIndex]=newVIndex;
-				// cout<<"indices:"<<newVIndex-1<<": "<<indices[newVIndex-1]<<endl;
 				//cout<<newVertices[newVIndex]<<" "<<newVertices[newVIndex+1]<<" "<<newVertices[newVIndex+2]<<endl;
 				newVIndex+=1;
 				
 			}
 
 			if(	vertices[v1+3]>=v && vertices[v3+3]<v || vertices[v1+3]<v && vertices[v3+3]>=v){
-				newVertices[3*newVIndex+0]=	(vertices[v1+0]+vertices[v3+0])/2 ;
-				newVertices[3*newVIndex+1]=	(vertices[v1+1]+vertices[v3+1])/2 ;
+				newVertices[3*newVIndex+0]=	result(vertices[v1+0],vertices[v3+0],vertices[v1+3],vertices[v3+3]) ;
+				newVertices[3*newVIndex+1]=	result(vertices[v1+1],vertices[v3+1],vertices[v1+3],vertices[v3+3]) ;
 				//newVertices[3*newVIndex+2]=	(vertices[v1+2]+vertices[v3+2])/2 ;
 				newVertices[3*newVIndex+2]=	vertices[v1+2];
 
@@ -184,8 +197,8 @@ static void CreateVertexBuffer()
 			}
 
 			if(	vertices[v0+3]>=v && vertices[v3+3]<v || vertices[v0+3]<v && vertices[v3+3]>=v){
-				newVertices[3*newVIndex+0]=	(vertices[v0+0]+vertices[v3+0])/2 ;
-				newVertices[3*newVIndex+1]=	(vertices[v0+1]+vertices[v3+1])/2 ;
+				newVertices[3*newVIndex+0]=	result(vertices[v0+0],vertices[v3+0],vertices[v0+3],vertices[v3+3]) ;
+				newVertices[3*newVIndex+1]=	result(vertices[v0+1],vertices[v3+1],vertices[v0+3],vertices[v3+3]) ;
 				//newVertices[3*newVIndex+2]=	(vertices[v0+2]+vertices[v3+2])/2 ;
 				newVertices[3*newVIndex+2]=	vertices[v0+2];
 				
@@ -197,9 +210,8 @@ static void CreateVertexBuffer()
 
 			//// upper triangle
 			if(	vertices[v0+3]>=v && vertices[v2+3]<v || vertices[v0+3]<v && vertices[v2+3]>=v){
-				newVertices[3*newVIndex]=	(vertices[v0+0]+vertices[v2+0])/2 ;
-				newVertices[3*newVIndex+1]=	(vertices[v0+1]+vertices[v2+1])/2 ;
-				//newVertices[3*newVIndex+2]=	(vertices[v0+2]+vertices[v2+2])/2 ;
+				newVertices[3*newVIndex+0]=	result(vertices[v0+0],vertices[v2+0],vertices[v0+3],vertices[v2+3]) ;
+				newVertices[3*newVIndex+1]=	result(vertices[v0+1],vertices[v2+1],vertices[v0+3],vertices[v2+3]) ;
 				newVertices[3*newVIndex+2]=	vertices[v0+2];
 
 				indices[newVIndex]=newVIndex;
@@ -209,8 +221,8 @@ static void CreateVertexBuffer()
 			}
 
 			if(	vertices[v2+3]>=v && vertices[v3+3]<v || vertices[v2+3]<v && vertices[v3+3]>=v){
-				newVertices[3*newVIndex+0]=	(vertices[v2+0]+vertices[v3+0])/2 ;
-				newVertices[3*newVIndex+1]=	(vertices[v2+1]+vertices[v3+1])/2 ;
+				newVertices[3*newVIndex+0]=	result(vertices[v2+0],vertices[v3+0],vertices[v2+3],vertices[v3+3]) ;
+				newVertices[3*newVIndex+1]=	result(vertices[v2+1],vertices[v3+1],vertices[v2+3],vertices[v3+3]) ;
 				//newVertices[3*newVIndex+2]=	(vertices[v2+2]+vertices[v3+2])/2 ;
 				newVertices[3*newVIndex+2]=	vertices[v2+2] ;
 
@@ -221,10 +233,10 @@ static void CreateVertexBuffer()
 			}
 
 			if(	vertices[v0+3]>=v && vertices[v3+3]<v || vertices[v0+3]<v && vertices[v3+3]>=v){
-				newVertices[3*newVIndex+0]=	(vertices[v0+0]+vertices[v3+0])/2 ;
-				newVertices[3*newVIndex+1]=	(vertices[v0+1]+vertices[v3+1])/2 ;
+				newVertices[3*newVIndex+0]=	result(vertices[v0+0],vertices[v3+0],vertices[v0+3],vertices[v3+3]) ;
+				newVertices[3*newVIndex+1]=	result(vertices[v0+1],vertices[v3+1],vertices[v0+3],vertices[v3+3]) ;
 				//newVertices[3*newVIndex+2]=	(vertices[v0+2]+vertices[v3+2])/2 ;
-				newVertices[3*newVIndex+2]=	vertices[v0+2] ;
+				newVertices[3*newVIndex+2]=	vertices[v0+2];
 
 				indices[newVIndex]=newVIndex;
 				newVIndex+=1;
