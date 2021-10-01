@@ -279,8 +279,8 @@ static void onDisplay()
 	//scaleMat.InitScaleTransform(0.02f,0.02f,0.02f);
 	//transform=scaleMat*transform;
 
-	rotateMat.InitAxisRotateTransform(Vector3f(0, 1, 0), rotation);
-	transformcube = rotateMat * transformcube;
+	// rotateMat.InitAxisRotateTransform(Vector3f(0, 1, 0), rotation);
+	// transformcube = rotateMat * transformcube;
 	rotation += 0.02;
 
 	translateMat.InitTranslationTransform(0.0f, 0.0f, +1.8f);

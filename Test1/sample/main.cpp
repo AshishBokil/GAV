@@ -20,15 +20,16 @@ int theWindowPositionX = 70, theWindowPositionY = 70;
 bool isFullScreen = false;
 bool isAnimating = true;
 float rotation = 0.0f;
-GLuint ShaderProgram;
-GLuint VBO, VAO;
-GLuint gWorldLocation,posID,colorID;
+GLuint ShaderProgram,ShaderProgramCube;
+GLuint VBO, VAO,VBcube,IBcube;
+GLuint gWorldLocation,posID,colorID,objColor_location,gWorldCubeLocation;
 
 /* Constants */
 const int ANIMATION_DELAY = 20; /* milliseconds between rendering */
 const char* pVSFileName = "shader.vs";
 const char* pFSFileName = "shader.fs";
-const char* pGSFileName = "shader.gs";
+const char* pVSCube = "shadercube.vs";
+const char* pFSCube = "shadercube.fs";
 
 /********************************************************************
   Utility functions
@@ -55,48 +56,46 @@ void computeFPS() {
 	}
 }
 
-static void CreateVertexBuffer() {
-	posID = glGetAttribLocation(ShaderProgram, "Position");
-	colorID = glGetAttribLocation(ShaderProgram, "Color");
+static void CreaterCubeBuffer(){
+Vector3f p[8];
+	//Initializing cube points
+	p[1] = Vector3f(0.5, 0.5, -0.5);   // P1
+	p[2] = Vector3f(0.5, -0.5, -0.5);  // P2
+	p[3] = Vector3f(-0.5, -0.5, -0.5); // P3
+	p[4] = Vector3f(-0.5, 0.5, 0.5);   // P4
+	p[5] = Vector3f(0.5, 0.5, 0.5);	   // P5
+	p[0] = Vector3f(-0.5, 0.5, -0.5);  // P0
+	p[6] = Vector3f(0.5, -0.5, 0.5);   // P6
+	p[7] = Vector3f(-0.5, -0.5, 0.5);  // P7
 
-	// glGenVertexArrays(1, &VAO);
-	// cout << "VAO: " << VAO << endl;
-	// glBindVertexArray(VAO);
+	unsigned int cubeIndices[24]= {
+		0, 2, 2, 3, 3, 1, 1, 0,
+		7, 6, 6, 4, 4, 5, 5, 7,
+		0, 4, 3, 7, 1, 5, 2, 6};
 
-	
-	Vector3f Vertices[4][2];
-	Vertices[0][0] = Vector3f(-1.0f, -1.0f, 0.0f);
-	Vertices[1][0] = Vector3f(1.0f, -1.0f, 0.0f);
-	Vertices[2][0] = Vector3f(-1.0f, 1.0f, 0.0f);
-	Vertices[3][0] = Vector3f(1.0f, 1.0f, 0.0f);
-	Vertices[0][1] = Vector3f(-1.0f, -1.0f, 0.0f);
-	Vertices[1][1] = Vector3f(1.0f, -1.0f, 0.0f);
-	Vertices[2][1] = Vector3f(-1.0f, 1.0f, 0.0f);
-	Vertices[3][1] = Vector3f(1.0f, 1.0f, 0.0f);
-	unsigned int vrtxCount=4;
 
-	unsigned int indices[]={
-		0,1,2,
-		1,2,3
-	};
-	glGenBuffers(1, &VBO);
-	glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glBufferData(GL_ARRAY_BUFFER, vrtxCount * 6*(sizeof(float)),Vertices, GL_STATIC_DRAW);
-	
+	glGenBuffers(1, &VBcube);
+	glBindBuffer(GL_ARRAY_BUFFER, VBcube);
+	glBufferData(GL_ARRAY_BUFFER, 8 * 3 *(sizeof(float)),p, GL_STATIC_DRAW);
+
 	glEnableVertexAttribArray(0);
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), 0);
+	// //glBindBuffer(GL_ARRAY_BUFFER, VBO);
+	glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 3*sizeof(float), 0);
 
-	glEnableVertexAttribArray(1);
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6*sizeof(float), (void *)(3*sizeof(float)));
+	unsigned int IBcube;
+	glGenBuffers(1,&IBcube);
+	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,IBcube);
+	glBufferData(GL_ELEMENT_ARRAY_BUFFER,24*sizeof(unsigned int),cubeIndices,GL_STATIC_DRAW);
 
-	unsigned int IBO;
-	glGenBuffers(1,&IBO);
-	glBindBuffer(GL_ELEMENT_ARRAY_BUFFER,IBO);
-	glBufferData(GL_ELEMENT_ARRAY_BUFFER,6*sizeof(unsigned int),indices,GL_STATIC_DRAW);
 
-	// glBindVertexArray(0);
+}
+
+
+
+static void CreateVertexBuffer() {
+	//posID = glGetAttribLocation(ShaderProgram, "Position");
+	//colorID = glGetAttribLocation(ShaderProgram, "Color");
+
 	// glBindBuffer(GL_ARRAY_BUFFER, 0);
 }
 
@@ -130,13 +129,18 @@ using namespace std;
 
 static void CompileShaders() {
 	ShaderProgram = glCreateProgram();
-
+	ShaderProgramCube = glCreateProgram();
 	if (ShaderProgram == 0) {
 		fprintf(stderr, "Error creating shader program\n");
 		exit(1);
 	}
 
-	string vs, fs, gs;
+	if (ShaderProgramCube == 0) {
+		fprintf(stderr, "Error creating shader program\n");
+		exit(1);
+	}
+
+	string vs, fs;
 
 	if (!ReadFile(pVSFileName, vs)) {
 		exit(1);
@@ -146,12 +150,19 @@ static void CompileShaders() {
 		exit(1);
 	}
 
-	if (!ReadFile(pGSFileName, gs)) {
+	AddShader(ShaderProgram, vs.c_str(), GL_VERTEX_SHADER);
+	AddShader(ShaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
+
+	if (!ReadFile(pVSCube, vs)) {
 		exit(1);
 	}
 
-	AddShader(ShaderProgram, vs.c_str(), GL_VERTEX_SHADER);
-	AddShader(ShaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
+	if (!ReadFile(pFSCube, fs)) {
+		exit(1);
+	}
+	
+	AddShader(ShaderProgramCube, vs.c_str(), GL_VERTEX_SHADER);
+	AddShader(ShaderProgramCube, fs.c_str(), GL_FRAGMENT_SHADER);
 	//AddShader(ShaderProgram, gs.c_str(), GL_GEOMETRY_SHADER);
 
 	GLint Success = 0;
@@ -173,15 +184,29 @@ static void CompileShaders() {
 		exit(1);
 	}
 
-	glValidateProgram(ShaderProgram);
-	glGetProgramiv(ShaderProgram, GL_VALIDATE_STATUS, &Success);
+	glUseProgram(ShaderProgram);
+	gWorldLocation = glGetUniformLocation(ShaderProgram, "gWorld");
+
+	//______________________________________________________________________________________-
+
+	glLinkProgram(ShaderProgramCube);
+	glGetProgramiv(ShaderProgramCube, GL_LINK_STATUS, &Success);
+	if (Success == 0) {
+		glGetProgramInfoLog(ShaderProgramCube, sizeof (ErrorLog), NULL, ErrorLog);
+		fprintf(stderr, "Error linking shader program: '%s'\n", ErrorLog);
+		exit(1);
+	}
+
+	glValidateProgram(ShaderProgramCube);
+	glGetProgramiv(ShaderProgramCube, GL_VALIDATE_STATUS, &Success);
 	if (!Success) {
-		glGetProgramInfoLog(ShaderProgram, sizeof (ErrorLog), NULL, ErrorLog);
+		glGetProgramInfoLog(ShaderProgramCube, sizeof (ErrorLog), NULL, ErrorLog);
 		fprintf(stderr, "Invalid shader program: '%s'\n", ErrorLog);
 		exit(1);
 	}
-	glUseProgram(ShaderProgram);
-	gWorldLocation = glGetUniformLocation(ShaderProgram, "gWorld");
+
+	glUseProgram(ShaderProgramCube);
+	gWorldCubeLocation = glGetUniformLocation(ShaderProgramCube, "gWorldCube");
 	
 }
 
@@ -198,7 +223,7 @@ void onInit(int argc, char * argv[])
 	glClearColor(0.0f, 0.0f, 0.0f, 0.0f);
 	CompileShaders();
 	CreateVertexBuffer();
-
+	CreaterCubeBuffer();
 	/* set to draw in window based on depth  */
 	glEnable(GL_DEPTH_TEST); 
 }
@@ -207,24 +232,29 @@ static void onDisplay() {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//glPointSize(5);
 
-	Matrix4f World,transform;
+	Matrix4f World,transformcube;
 
 	World.m[0][0] = cosf(rotation); World.m[0][1] = -sinf(rotation); World.m[0][2] = 0.0f; World.m[0][3] = 0.0f;
 	World.m[1][0] = sinf(rotation); World.m[1][1] = cosf(rotation);  World.m[1][2] = 0.0f; World.m[1][3] = 0.0f;
 	World.m[2][0] = 0.0f;        World.m[2][1] = 0.0f;         World.m[2][2] = 1.0f; World.m[2][3] = 0.0f;
 	World.m[3][0] = 0.0f;        World.m[3][1] = 0.0f;         World.m[3][2] = 0.0f; World.m[3][3] = 1.0f;
 
-	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]);
+	//glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &World.m[0][0]);
 
-	//glEnableVertexAttribArray(0);
-	//glBindBuffer(GL_ARRAY_BUFFER, VBO);
-	//glVertexAttribPointer(0, 3, GL_FLOAT, GL_FALSE, 0, 0);
 
-	//glBindVertexArray(VAO);
-	glDrawElements(GL_TRIANGLES, 6,GL_UNSIGNED_INT,nullptr);
-	//glBindVertexArray(0);
+	glUseProgram(ShaderProgramCube);
 
-	//glDisableVertexAttribArray(0);
+	transformcube.InitIdentity();
+
+	Matrix4f persProjection;
+	PersProjInfo proj(90.0f, 1.0f, 1.0f, +1.0f, -1.0f); 
+	persProjection.InitPersProjTransform(proj);
+	transformcube = persProjection * transformcube;
+
+	glUniformMatrix4fv(gWorldCubeLocation, 1, GL_TRUE, &transformcube.m[0][0]);
+	//glUniform1f(objColor_location,0);
+	glDrawElements(GL_TRIANGLES,24,GL_UNSIGNED_INT,nullptr);
+
 
 	/* check for any errors when rendering */
 	GLenum errorCode = glGetError();

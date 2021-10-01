@@ -95,7 +95,6 @@ static void CreateVertexBuffer()
 {
 	FILE *input;
 	unsigned int x, y, z;
-	//  input = fopen("testdata.txt", "r");
 	input = fopen("out.txt", "r");
 	if (input == NULL)
 	{
@@ -130,14 +129,7 @@ static void CreateVertexBuffer()
 			}
 		}
 	}
-
-	// for (int i = 0; i < x * y * z; i++)
-	// {
-	// 	cout << setw(12) << (vertices[4 * i + 0]) << " "
-	// 		 << setw(12) << (vertices[4 * i + 1]) << " "
-	// 		 << setw(12) << (vertices[4 * i + 2]) << " : "
-	// 		 << setw(12) << (vertices[4 * i + 3]) << " " << endl;
-	// }	
+	
 
 	float zincr = (float)1 / z;	
 	float slice = 0.5;
@@ -159,14 +151,6 @@ static void CreateVertexBuffer()
 		}
 	}
 
-	// for (int i = 0; i < 3 * noOfIndices; i++)
-	// {
-	// 	cout << indices[i] << " ";
-	// 	if (i % 3 == 2)
-	// 		cout << endl;
-	// }
-
-	//  exit(0);
 
 	GL_CALL(glGenBuffers(1, &VBO));
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
@@ -302,7 +286,7 @@ static void onDisplay()
 
 
 	  
-	  rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),3.15);
+	  rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),M_PI);
 	  transform=rotateMat*transform;
 
 	  	  translateMat.InitTranslationTransform(0.5,0.5,0);

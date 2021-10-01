@@ -1,0 +1,81 @@
+ll v=50;
+	ll newVIndex=0;
+	for (int j = 0; j < y - 1; j++)
+	{
+		for (int i = 0; i < x - 1; i++)
+		{
+			ll v0=i + x * j + x * y * k;
+			ll v1=(i + 1) + x * j + x * y * k;
+			ll v2=i + x * (j + 1) + x * y * k;
+			ll v3=(i + 1) + x * (j + 1) + x * y * k;
+
+			//// lower triangle
+			if(	vertices[v0+3]>=v && vertices[v1+3]<v || vertices[v0+3]<v && vertices[v1+3]>=v){
+				newVertices[3*newVIndex]=	(vertices[v0+0]+vertices[v1+0])/2 ;
+				newVertices[3*newVIndex+1]=	(vertices[v0+1]+vertices[v1+1])/2 ,
+				newVertices[3*newVIndex+2]=	(vertices[v0+2]+vertices[v1+2])/2 ,
+
+				indices[newVIndex++];
+
+			}
+
+			if(	vertices[v1+3]>=v && vertices[v3+3]<v || vertices[v1+3]<v && vertices[v3+3]>=v){
+				newVertices[3*newVIndex+0]=	(vertices[v1+0]+vertices[v3+0])/2 ;
+				newVertices[3*newVIndex+1]=	(vertices[v1+1]+vertices[v3+1])/2 ;
+				newVertices[3*newVIndex+2]=	(vertices[v1+2]+vertices[v3+2])/2 ;
+				indices[newVIndex++];
+
+			}
+
+			if(	vertices[v0+3]>=v && vertices[v3+3]<v || vertices[v0+3]<v && vertices[v3+3]>=v){
+				newVertices[3*newVIndex+0]=	(vertices[v0+0]+vertices[v3+0])/2 ;
+				newVertices[3*newVIndex+1]=	(vertices[v0+1]+vertices[v3+1])/2 ;
+				newVertices[3*newVIndex+2]=	(vertices[v0+2]+vertices[v3+2])/2 ;
+				indices[newVIndex++];
+
+			}
+
+			//// upper triangle
+			if(	vertices[v1+3]>=v && vertices[v2+3]<v || vertices[v1+3]<v && vertices[v2+3]>=v){
+				newVertices[3*newVIndex]=	(vertices[v1]+vertices[v2])/2 ;
+				newVertices[3*newVIndex+1]=	(vertices[v1+1]+vertices[v2+1])/2 ,
+				newVertices[3*newVIndex+2]=	(vertices[v1+2]+vertices[v2+2])/2 ,
+
+				indices[newVIndex++];
+
+			}
+
+			if(	vertices[v2+3]>=v && vertices[v3+3]<v || vertices[v2+3]<v && vertices[v3+3]>=v){
+				newVertices[3*newVIndex+0]=	(vertices[v2+0]+vertices[v3+0])/2 ;
+				newVertices[3*newVIndex+1]=	(vertices[v2+1]+vertices[v3+1])/2 ;
+				newVertices[3*newVIndex+2]=	(vertices[v2+2]+vertices[v3+2])/2 ;
+				indices[newVIndex++];
+
+			}
+
+			if(	vertices[v1+3]>=v && vertices[v3+3]<v || vertices[v1+3]<v && vertices[v3+3]>=v){
+				newVertices[3*newVIndex+0]=	(vertices[v1+0]+vertices[v3+0])/2 ;
+				newVertices[3*newVIndex+1]=	(vertices[v1+1]+vertices[v3+1])/2 ;
+				newVertices[3*newVIndex+2]=	(vertices[v1+2]+vertices[v3+2])/2 ;
+				indices[newVIndex++];
+
+			}
+			
+		}
+	}
+
+	noOfIndices=2*newVIndex;
+
+	GL_CALL(glGenBuffers(1, &VBO));
+	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
+	GL_CALL(glBufferData(GL_ARRAY_BUFFER, newVIndex * 3 * sizeof(float), vertices, GL_STATIC_DRAW));
+
+	GL_CALL(glEnableVertexAttribArray(0));
+	GL_CALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 3 * sizeof(float), 0));
+
+	// GL_CALL(glEnableVertexAttribArray(1));
+	// GL_CALL(glVertexAttribPointer(1, 1, GL_FLOAT, GL_TRUE, 4 * sizeof(float), (void *)(3 * sizeof(float))));
+
+	GL_CALL(glGenBuffers(1, &IBO));
+	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO));
+	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, noOfIndices * sizeof(unsigned int), indices, GL_STATIC_DRAW));
