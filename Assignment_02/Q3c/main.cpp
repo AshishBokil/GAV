@@ -29,7 +29,7 @@ float x = 0.0f, y = -1.0f;
 int choicelight = 0, choice = 0;
 //int noOfPoints=500000;
 GLuint VBO, VAO, IBO, IAO;
-GLuint gWorldLocation, lightpos_location, view_location,objColor_location;
+GLuint gWorldLocation, lightpos_location, view_location, objColor_location;
 unsigned long noOfvertices, noOfIndices;
 /*model*/
 OffModel *model;
@@ -45,14 +45,14 @@ Matrix4f World;
 float *vertices;
 Vector3f *newvertices;
 unsigned int *indices;
-ll newindex=0;
-ll thIndices[6][4]={
-	0,1,2,4,
-	0,1,3,4,
-	2,3,6,4,
-	3,6,7,4,
-	1,3,7,4,
-	1,5,7,4
+ll newindex = 0;
+ll thIndices[6][4] = {
+	0, 1, 2, 4,
+	0, 1, 3, 4,
+	2, 3, 6, 4,
+	3, 6, 7, 4,
+	1, 3, 7, 4,
+	1, 5, 7, 4
 
 };
 
@@ -104,7 +104,7 @@ void computeFPS()
 	}
 }
 
-ll v=50;
+ll v = 50;
 
 // static float result(float a,float b,float sa,float sb){
 // 		float ratio=v/(sa+sb);
@@ -114,117 +114,127 @@ ll v=50;
 // 			ans= b-ratio*diff;
 // 		}
 // 		else ans=a+ratio*diff;
-		
+
 // 		//cout<<a<<" "<<b<<""<<"ans="<<ans<<endl;
 // 		return ans;
 // }
 
-static Vector3f result(Vector4f a,Vector4f b){
-		float ratio=v/(a.w+b.w);
-		Vector3f diff=Vector3f(b.x-a.x,b.y-a.y,b.z-a.z);
-		Vector3f ans;
-		if(a.w>b.w){
-			ratio=1-ratio;
-		}
-		ans=Vector3f(a.x+ratio*diff.x,a.y+ratio*diff.y,a.z+ratio*diff.z);
-		
-		return ans;
+static Vector3f result(Vector4f a, Vector4f b)
+{
+	float ratio = v / (a.w + b.w);
+	Vector3f diff = Vector3f(b.x - a.x, b.y - a.y, b.z - a.z);
+	Vector3f ans;
+	if (a.w > b.w)
+	{
+		ratio = 1 - ratio;
+	}
+	ans = Vector3f(a.x + ratio * diff.x, a.y + ratio * diff.y, a.z + ratio * diff.z);
+	
+
+	return ans;
 }
 
-
-static void find_triangles(ll th[]){
+static void find_triangles(ll th[])
+{
 	// cout<<"checkpoint3.1"<<endl;
-	Vector4f v1,v2,v3,v4;
-	Vector3f temp[8]={-1};
-	int count=0;
-	for(int i=0;i<3;i++){
-		for(int j=i+1;j<4;j++){
+	Vector4f v1, v2, v3, v4;
+	Vector3f temp[8] = {-1};
+	int count = 0;
+	for (int i = 0; i < 3; i++)
+	{
+		for (int j = i + 1; j < 4; j++)
+		{
 			//for(int k=j+1;k<4;k++){
-				
-				v1=Vector4f(	vertices[4*th[i]],vertices[4*th[i]+1],vertices[4*th[i]+2]	,vertices[4*th[i]+3]);
-				v2=Vector4f(	vertices[4*th[j]],vertices[4*th[j]+1],vertices[4*th[j]+2]	,vertices[4*th[j]+3]);
-				//v3=Vector4f(	vertices[4*th[k]],vertices[4*th[k]+1],vertices[4*th[k]+2]	,vertices[4*th[k]+3]);
-				// cout<<4*th[i]<<" "<<4*th[j]<<" "<<endl;
-				//  cout<<"v1="<<v1.x<<" "<<v1.y<<" "<<v1.z<<" :"<<v1.w<<endl;
-				//  cout<<"v2="<<v2.x<<" "<<v2.y<<" "<<v2.z<<" :"<<v2.w<<endl;
-				
-				if(	v1.w >=v && v2.w<v || v1.w<v && v2.w>=v){
-					temp[count]=result(v1,v2);
-					//count++;
-					//  cout<<"v1="<<v1.x<<" "<<v1.y<<" "<<v1.z<<" :"<<v1.w<<endl;
-				 	// cout<<"v2="<<v2.x<<" "<<v2.y<<" "<<v2.z<<" :"<<v2.w<<endl;
-					// cout<<"result="<<temp[count].x<<" "<<temp[count].y<<" "<<temp[count].z<<" :"<<endl;
-					count++;
-				}
-				// if( v2.w >=v && v3.w<v || v2.w<v && v3.w>=v){
-				// 	temp[count++]=result(v2,v3);
-				// //count++;
-				// }
-				// if(	v1.w >=v && v3.w<v || v1.w<v && v3.w>=v){
-				// 	temp[count++]=result(v1,v3);
-				// //count++;
-				// }
 
-				//cout<<endl;
+			v1 = Vector4f(vertices[4 * th[i]], vertices[4 * th[i] + 1], vertices[4 * th[i] + 2], vertices[4 * th[i] + 3]);
+			v2 = Vector4f(vertices[4 * th[j]], vertices[4 * th[j] + 1], vertices[4 * th[j] + 2], vertices[4 * th[j] + 3]);
+			//v3=Vector4f(	vertices[4*th[k]],vertices[4*th[k]+1],vertices[4*th[k]+2]	,vertices[4*th[k]+3]);
+			// cout<<4*th[i]<<" "<<4*th[j]<<" "<<endl;
+			//  cout<<"v1="<<v1.x<<" "<<v1.y<<" "<<v1.z<<" :"<<v1.w<<endl;
+			//  cout<<"v2="<<v2.x<<" "<<v2.y<<" "<<v2.z<<" :"<<v2.w<<endl;
+
+			if (v1.w >= v && v2.w < v || v1.w < v && v2.w >= v)
+			{
+				temp[count] = result(v1, v2);
+				//count++;
+				
+					//  cout<<"v1="<<v1.x<<" "<<v1.y<<" "<<v1.z<<" :"<<v1.w<<endl;
+					// cout<<"v2="<<v2.x<<" "<<v2.y<<" "<<v2.z<<" :"<<v2.w<<endl;
+					// cout<<"result=\t"<<temp[count].x<<setw(12)<<temp[count].y<<setw(12)<<temp[count].z<<" :\n"<<endl;
+				
+				count++;
+			}
+			// if( v2.w >=v && v3.w<v || v2.w<v && v3.w>=v){
+			// 	temp[count++]=result(v2,v3);
+			// //count++;
+			// }
+			// if(	v1.w >=v && v3.w<v || v1.w<v && v3.w>=v){
+			// 	temp[count++]=result(v1,v3);
+			// //count++;
+			// }
+
+			//cout<<endl;
 			//	exit(0);
 
-		//	}
+			//	}
 		}
 	}
 	// cout<<"checkpoint3.3"<<endl;
-	// cout<<"lines in tetra "<<count<<endl;
+	 cout<<"lines in tetra "<<count<<endl;
 
-	if(count==4){
-		newvertices[newindex]= temp[0];
-		indices[newindex]=newindex;
+	if (count == 4)
+	{
+		newvertices[newindex] = temp[0];
+		indices[newindex] = newindex;
 		newindex++;
-		newvertices[newindex]= temp[1];
-		indices[newindex]=newindex;
+		newvertices[newindex] = temp[1];
+		indices[newindex] = newindex;
 		newindex++;
-		newvertices[newindex]= temp[2];
-		indices[newindex]=newindex;
+		newvertices[newindex] = temp[2];
+		indices[newindex] = newindex;
 		newindex++;
-		newvertices[newindex]= temp[0];
-		indices[newindex]=newindex;
+		newvertices[newindex] = temp[0];
+		indices[newindex] = newindex;
 		newindex++;
-		newvertices[newindex]= temp[1];
-		indices[newindex]=newindex;
+		newvertices[newindex] = temp[1];
+		indices[newindex] = newindex;
 		newindex++;
-		newvertices[newindex]= temp[3];
-		indices[newindex]=newindex;
+		newvertices[newindex] = temp[3];
+		indices[newindex] = newindex;
 		newindex++;
-
 	}
-	else{
-		newvertices[newindex]= temp[0];
-		indices[newindex]=newindex;
+	else if(count==3)
+	{
+		newvertices[newindex] = temp[0];
+		indices[newindex] = newindex;
 		newindex++;
-		newvertices[newindex]= temp[1];
-		indices[newindex]=newindex;
+		newvertices[newindex] = temp[1];
+		indices[newindex] = newindex;
 		newindex++;
-		newvertices[newindex]= temp[2];
-		indices[newindex]=newindex;
+		newvertices[newindex] = temp[2];
+		indices[newindex] = newindex;
 		newindex++;
 	}
 	//cout<<newindex<<endl;
-//	exit(0);
-
+	//	exit(0);
 }
 
-static void tetra(ll cell[]){
+static void tetra(ll cell[])
+{
 	//cout<<"checkpoint2"<<endl;
-		for(int i=0;i<6;i++){
-			ll th[4]={
-				cell[thIndices[i][0]],
-				cell[thIndices[i][1]],
-				cell[thIndices[i][2]],
-				cell[thIndices[i][3]]
+	for (int i = 0; i < 6; i++)
+	{
+		ll th[4] = {
+			cell[thIndices[i][0]],
+			cell[thIndices[i][1]],
+			cell[thIndices[i][2]],
+			cell[thIndices[i][3]]
 
-			};
-			// for(int j=0;j<4;j++)cout<<th[j]<<" ";
-			// 	cout<<endl;
-			find_triangles(th);
-		}
+		};
+		// for(int j=0;j<4;j++)cout<<th[j]<<" ";
+		// 	cout<<endl;
+		find_triangles(th);
+	}
 }
 
 static void CreateVertexBuffer()
@@ -244,8 +254,8 @@ static void CreateVertexBuffer()
 
 	noOfvertices = x * y * z;
 	vertices = new float[noOfvertices * 4];
-	newvertices= new Vector3f[noOfvertices *36];
-	indices= new unsigned int[noOfvertices*36];
+	newvertices = new Vector3f[noOfvertices * 36];
+	indices = new unsigned int[noOfvertices * 36];
 	for (int k = 0; k < z; k++)
 	{
 		for (int j = 0; j < y; j++)
@@ -253,27 +263,28 @@ static void CreateVertexBuffer()
 			for (int i = 0; i < x; i++)
 			{
 				ll pos = k * y * x + j * x + i;
-				vertices[4 * pos + 0] = (float)i / (x-1);
-				vertices[4 * pos + 1] = (float)j / (y-1);
-				vertices[4 * pos + 2] = (float)k / (z-1);
+				vertices[4 * pos + 0] = (float)i / (x - 1);
+				vertices[4 * pos + 1] = (float)j / (y - 1);
+				vertices[4 * pos + 2] = (float)k / (z - 1);
 				fscanf(input, "%f", &vertices[4 * pos + 3]);
-			//	data[t++]=vertices[4 * pos + 3];
+				//	data[t++]=vertices[4 * pos + 3];
 			}
 		}
 	}
-	
+
 	//cout<<"checkpoint1"<<endl;
-	// float zincr = (float)1 / z;	
+	// float zincr = (float)1 / z;
 	// float slice = 0.5;
 	// //int k = slice / zincr;
 	// if (slice == 1)
 	// 	k--;
 	// float *newVertices = new float[noOfvertices * 3];
 	// unsigned int *indices = new unsigned int[noOfIndices * 4];
-	
-	ll newVIndex=0;
+
+	ll newVIndex = 0;
 	//cout<<newVIndex<<endl;
-	for(int k=0;k<z-1;k++){
+	for (int k = 0; k < z - 1; k++)
+	{
 
 		for (int j = 0; j < y - 1; j++)
 		{
@@ -281,31 +292,34 @@ static void CreateVertexBuffer()
 			{
 				ll cell[8];
 
-				 cell[0]=(i + x * j + x * y * k);
-				 cell[1]=((i + 1) + x * j + x * y * k);
-				 cell[2]=(i + x * (j + 1) + x * y * k);
-				 cell[3]=((i + 1) + x * (j + 1) + x * y * k);
-				 cell[4]=(i + x * j + x * y * (k+1));
-				 cell[5]=((i + 1) + x * j + x * y * (k+1));
-				 cell[6]=(i + x * (j + 1) + x * y * (k+1));
-				 cell[7]=((i + 1) + x * (j + 1) + x * y * (k+1));
+				cell[0] = (i + x * j + x * y * k);
+				cell[1] = ((i + 1) + x * j + x * y * k);
+				cell[2] = (i + x * (j + 1) + x * y * k);
+				cell[3] = ((i + 1) + x * (j + 1) + x * y * k);
+				cell[4] = (i + x * j + x * y * (k + 1));
+				cell[5] = ((i + 1) + x * j + x * y * (k + 1));
+				cell[6] = (i + x * (j + 1) + x * y * (k + 1));
+				cell[7] = ((i + 1) + x * (j + 1) + x * y * (k + 1));
 				// for(int l=0;l<8;l++)cout<<cell[l]<<" ";
 				// cout<<endl;
 				tetra(cell);
-
 			}
 		}
-
 	}
 	//cout<<newVIndex<<endl;
-	 noOfIndices=newindex;
+	noOfIndices = newindex;
+	int t = 0;
+	for (int i = 0; i < newindex; i++)
+	{
 
-	// for(int i=0;i<newindex;i++){
-	// 	cout<<indices[i]<<endl;
-	// 	cout<<newvertices[i].x<<" "<<newvertices[i].y<<" "<<newvertices[i].z<<endl;
-		
-	// 	}
-	cout<<newindex<<endl;
+		if (!(newvertices[i].x >= 0 && newvertices[i].y >= 0 && newvertices[i].z >= 0))
+		{
+			t++;
+			cout << indices[i] << endl;
+			cout << newvertices[i].x << " " << newvertices[i].y << " " << newvertices[i].z << endl;
+		}
+	}
+	cout << newindex <<" "<<t<< endl;
 	// exit(0);
 
 	GL_CALL(glGenBuffers(1, &VBO));
@@ -321,7 +335,6 @@ static void CreateVertexBuffer()
 	GL_CALL(glGenBuffers(1, &IBO));
 	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO));
 	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, newindex * sizeof(unsigned int), indices, GL_STATIC_DRAW));
-
 }
 
 static void AddShader(GLuint ShaderProgram, const char *pShaderText, GLenum ShaderType)
@@ -405,7 +418,7 @@ static void CompileShaders()
 	gWorldLocation = glGetUniformLocation(ShaderProgram, "gWorld");
 	lightpos_location = glGetUniformLocation(ShaderProgram, "lightPos");
 	view_location = glGetUniformLocation(ShaderProgram, "viewPos");
-	objColor_location =	glGetUniformLocation(ShaderProgram, "objectcolor");
+	objColor_location = glGetUniformLocation(ShaderProgram, "objectcolor");
 }
 
 /********************************************************************
@@ -441,28 +454,27 @@ static void onDisplay()
 	transformcube.InitIdentity();
 
 	// Matrix4f persProjection;
-	// PersProjInfo proj(90.0f, 1.0f, 1.0f, +1.0f, -1.0f); 
+	// PersProjInfo proj(90.0f, 1.0f, 1.0f, +1.0f, -1.0f);
 	// persProjection.InitPersProjTransform(proj);
 	// transformcube = persProjection * transformcube;
 
 	// glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transformcube.m[0][0]);
-	glUniform1f(objColor_location,0);
-
+	glUniform1f(objColor_location, 0);
 
 	// glUniform1f(objColor_location,1);
 
-	scaleMat.InitScaleTransform(0.9f,0.9f,0.9f);
-	transform=scaleMat*transform;
+	scaleMat.InitScaleTransform(0.9f, 0.9f, 0.9f);
+	transform = scaleMat * transform;
 
-	rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),M_PI);
-	transform=rotateMat*transform;
+	// rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),M_PI);
+	// transform=rotateMat*transform;
 
-	translateMat.InitTranslationTransform(0.5,0.5,0);
-	transform=translateMat*transform;
+	// translateMat.InitTranslationTransform(0.5,0.5,0);
+	// transform=translateMat*transform;
 
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transform.m[0][0]);
-	glPolygonMode(GL_FRONT_AND_BACK,GL_LINE);
-	glDrawElements(GL_TRIANGLES, noOfIndices , GL_UNSIGNED_INT, nullptr);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, nullptr);
 
 	/* check for any errors when rendering */
 	GLenum errorCode = glGetError();
@@ -686,7 +698,6 @@ int main(int argc, char **argv)
 // 255
 // 255
 // 0
-
 
 // 3 3 3
 // 255
