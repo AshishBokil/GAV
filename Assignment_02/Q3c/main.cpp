@@ -138,7 +138,7 @@ static void find_triangles(ll th[])
 {
 	// cout<<"checkpoint3.1"<<endl;
 	Vector4f v1, v2, v3, v4;
-	Vector3f temp[8] = {-1};
+	Vector3f temp[8] = {0};
 	int count = 0;
 	for (int i = 0; i < 3; i++)
 	{
@@ -180,7 +180,7 @@ static void find_triangles(ll th[])
 		}
 	}
 	// cout<<"checkpoint3.3"<<endl;
-	 cout<<"lines in tetra "<<count<<endl;
+	// cout<<"lines in tetra "<<count<<endl;
 
 	if (count == 4)
 	{
