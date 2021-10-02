@@ -22,7 +22,7 @@ int theWindowWidth = 1500, theWindowHeight = 1000;
 int theWindowPositionX = 40, theWindowPositionY = 40;
 bool isFullScreen = true;
 bool isAnimating = true;
-float rotation = 0.00f, rotateLight = 0.00f;
+float rotation = 0.00f, rotateLight = 0.00f,rotateX=0,rotateY=0,rotateZ=0;
 float translation = 0.2f;
 float nextX = 0.f, nextY = 0.0f;
 float x = 0.0f, y = -1.0f;
@@ -241,7 +241,7 @@ static void CreateVertexBuffer()
 {
 	FILE *input;
 	unsigned int x, y, z;
-	input = fopen("testdata.txt", "r");
+	input = fopen("teapot.txt", "r");
 	if (input == NULL)
 	{
 		cout << "error opening file";
@@ -251,6 +251,8 @@ static void CreateVertexBuffer()
 	fscanf(input, "%d", &y);
 	fscanf(input, "%d", &z);
 	cout << x << " " << y << " " << z << endl;
+
+	int max=(x>y)?(x>z?x:z):(y>z?y:z);
 
 	noOfvertices = x * y * z;
 	vertices = new float[noOfvertices * 4];
@@ -263,9 +265,9 @@ static void CreateVertexBuffer()
 			for (int i = 0; i < x; i++)
 			{
 				ll pos = k * y * x + j * x + i;
-				vertices[4 * pos + 0] = (float)i / (x - 1);
-				vertices[4 * pos + 1] = (float)j / (y - 1);
-				vertices[4 * pos + 2] = (float)k / (z - 1);
+				vertices[4 * pos + 0] = ((float)i / (x - 1))*((float)x/max);
+				vertices[4 * pos + 1] = ((float)j / (y - 1))*((float)y/max);
+				vertices[4 * pos + 2] = ((float)k / (z - 1))*((float)z/max);
 				fscanf(input, "%f", &vertices[4 * pos + 3]);
 				//	data[t++]=vertices[4 * pos + 3];
 			}
@@ -466,12 +468,30 @@ static void onDisplay()
 	scaleMat.InitScaleTransform(0.9f, 0.9f, 0.9f);
 	transform = scaleMat * transform;
 
-	// rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),M_PI);
-	// transform=rotateMat*transform;
 
-	// translateMat.InitTranslationTransform(0.5,0.5,0);
-	// transform=translateMat*transform;
+	rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),M_PI);
+	transform=rotateMat*transform;
 
+	translateMat.InitTranslationTransform(0.5,0.5,0);
+	transform=translateMat*transform;
+
+	if(choice==1){
+		rotateMat.InitAxisRotateTransform(Vector3f(1,0,0),rotateX);
+		transform=rotateMat*transform;
+	}
+
+	if(choice==2){
+		rotateMat.InitAxisRotateTransform(Vector3f(0,1,0),rotateY);
+		transform=rotateMat*transform;
+	}
+
+	if(choice==3){
+		rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),rotateZ);
+		transform=rotateMat*transform;
+	
+	}
+
+	
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transform.m[0][0]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, nullptr);
@@ -563,20 +583,18 @@ static void onAlphaNumericKeyPress(unsigned char key, int x, int y)
 		break;
 		/* reset */
 	case '1':
-		if (choicelight != 1)
-			choicelight = 1;
-		else
-			choicelight = 0;
-		//rotateLight+=1;
+		choice=1;
+		rotateX+=0.05;
 		break;
 
 	case '2':
-		if (choice != 2)
-		{
-			choice = 2;
-		}
-		else
-			choice = 0;
+		choice=2;
+		rotateY+=0.05;
+		break;
+
+	case '3':
+		choice=3;
+		rotateZ+=0.05;
 		break;
 
 	case 'r':
