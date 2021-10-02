@@ -28,7 +28,7 @@ float nextX = 0.f, nextY = 0.0f;
 float x = 0.0f, y = -1.0f;
 int choicelight = 0, choice = 0;
 //int noOfPoints=500000;
-GLuint VBO, VAO, IBO, IAO;
+GLuint VBO, VAO, IBO, IAO,VBCube,IBCube,VACube;
 GLuint gWorldLocation, lightpos_location, view_location, objColor_location;
 unsigned long noOfvertices, noOfIndices;
 /*model*/
@@ -241,7 +241,7 @@ static void CreateVertexBuffer()
 {
 	FILE *input;
 	unsigned int x, y, z;
-	input = fopen("teapot.txt", "r");
+	input = fopen("testdata.txt", "r");
 	if (input == NULL)
 	{
 		cout << "error opening file";
@@ -324,6 +324,38 @@ static void CreateVertexBuffer()
 	cout << newindex <<" "<<t<< endl;
 	// exit(0);
 
+
+	///////Generate cube
+	Vector3f cubevertices[8]={
+		Vector3f(0,0,0),
+		Vector3f((float)x/max,0,0),
+		Vector3f(0,(float)y/max,0),
+		Vector3f((float)x/max,(float)y/max,0),
+		Vector3f(0,0,(float)z/max),
+		Vector3f((float)x/max,0,(float)z/max),
+		Vector3f(0,(float)y/max,(float)z/max),
+		Vector3f((float)x/max,(float)y/max,(float)z/max)
+
+	};
+
+	unsigned int cubeindices[24]={
+		0,1,
+		0,2,
+		0,4,
+		1,3,
+		1,5,
+		2,3,
+		2,6,
+		3,7,
+		4,5,
+		4,6,
+		5,7,
+		6,7
+	};
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
 	GL_CALL(glGenBuffers(1, &VBO));
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
 	GL_CALL(glBufferData(GL_ARRAY_BUFFER, newindex * 3 * sizeof(float), newvertices, GL_STATIC_DRAW));
@@ -337,6 +369,22 @@ static void CreateVertexBuffer()
 	GL_CALL(glGenBuffers(1, &IBO));
 	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO));
 	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, newindex * sizeof(unsigned int), indices, GL_STATIC_DRAW));
+
+
+	///For Cube
+	glGenVertexArrays(1, &VACube);
+	glBindVertexArray(VACube);
+
+	GL_CALL(glGenBuffers(1, &VBCube));
+	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBCube));
+	GL_CALL(glBufferData(GL_ARRAY_BUFFER, 8 * 3 * sizeof(float), newvertices, GL_STATIC_DRAW));
+
+	GL_CALL(glEnableVertexAttribArray(0));
+	GL_CALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 3 * sizeof(float), 0));
+
+	GL_CALL(glGenBuffers(1, &IBCube));
+	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBCube));
+	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 24 * sizeof(unsigned int), indices, GL_STATIC_DRAW));
 }
 
 static void AddShader(GLuint ShaderProgram, const char *pShaderText, GLenum ShaderType)
@@ -494,7 +542,12 @@ static void onDisplay()
 	
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transform.m[0][0]);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glBindVertexArray(VACube);
+	glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, nullptr);
+
+	glBindVertexArray(VAO);
 	glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, nullptr);
+
 
 	/* check for any errors when rendering */
 	GLenum errorCode = glGetError();
