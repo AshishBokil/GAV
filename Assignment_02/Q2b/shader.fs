@@ -5,7 +5,7 @@
 //in float Scalar;
 in vec3 TexCoord;
 uniform sampler3D ourTexture;
-uniform float objectcolor;
+in vec3 Objcolor;
 
 vec4 colormap(float x) {
 	float d = clamp(x, 0.0, 1.0);
@@ -14,5 +14,13 @@ vec4 colormap(float x) {
 }
 void main()
 {
-    gl_FragColor = texture(ourTexture, TexCoord);
+
+    if(Objcolor.x==0){
+		gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+	}
+	else {
+        gl_FragColor = texture(ourTexture, TexCoord);
+	}
+    
+    
 }

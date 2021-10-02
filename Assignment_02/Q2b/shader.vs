@@ -3,10 +3,11 @@
 layout (location = 0) in vec3 aPos;
 layout (location = 1) in float aScalar;
 uniform mat4 gWorld;
+uniform vec3 objcolor;
 
 out vec3 TexCoord;  
-//out float Scalar;
-
+out float Scalar;
+out vec3 Objcolor;
 void main()
 {  
     
@@ -15,5 +16,6 @@ void main()
     // FragPos = vec3(gl_Position);
     TexCoord = aPos;
     Scalar =aScalar;
+    Objcolor=objcolor;
     
 }
