@@ -40,7 +40,10 @@ const char *pFSFileName = "shader.fs";
 
 /********************************************************************
   Utility functions
+
  */
+
+float xmax,ymax,zmax;
 Matrix4f World;
 float *vertices;
 Vector3f *newvertices;
@@ -106,18 +109,6 @@ void computeFPS()
 
 ll v = 50;
 
-// static float result(float a,float b,float sa,float sb){
-// 		float ratio=v/(sa+sb);
-// 		float diff=b-a;
-// 		float ans;
-// 		if(sa>sb){
-// 			ans= b-ratio*diff;
-// 		}
-// 		else ans=a+ratio*diff;
-
-// 		//cout<<a<<" "<<b<<""<<"ans="<<ans<<endl;
-// 		return ans;
-// }
 
 static Vector3f result(Vector4f a, Vector4f b)
 {
@@ -156,27 +147,10 @@ static void find_triangles(ll th[])
 			if (v1.w >= v && v2.w < v || v1.w < v && v2.w >= v)
 			{
 				temp[count] = result(v1, v2);
-				//count++;
-				
-					//  cout<<"v1="<<v1.x<<" "<<v1.y<<" "<<v1.z<<" :"<<v1.w<<endl;
-					// cout<<"v2="<<v2.x<<" "<<v2.y<<" "<<v2.z<<" :"<<v2.w<<endl;
-					// cout<<"result=\t"<<temp[count].x<<setw(12)<<temp[count].y<<setw(12)<<temp[count].z<<" :\n"<<endl;
-				
+		
 				count++;
 			}
-			// if( v2.w >=v && v3.w<v || v2.w<v && v3.w>=v){
-			// 	temp[count++]=result(v2,v3);
-			// //count++;
-			// }
-			// if(	v1.w >=v && v3.w<v || v1.w<v && v3.w>=v){
-			// 	temp[count++]=result(v1,v3);
-			// //count++;
-			// }
-
-			//cout<<endl;
-			//	exit(0);
-
-			//	}
+		
 		}
 	}
 	// cout<<"checkpoint3.3"<<endl;
@@ -241,7 +215,7 @@ static void CreateVertexBuffer()
 {
 	FILE *input;
 	unsigned int x, y, z;
-	input = fopen("testdata.txt", "r");
+	input = fopen("teapot.txt", "r");
 	if (input == NULL)
 	{
 		cout << "error opening file";
@@ -253,6 +227,9 @@ static void CreateVertexBuffer()
 	cout << x << " " << y << " " << z << endl;
 
 	int max=(x>y)?(x>z?x:z):(y>z?y:z);
+	xmax=(float)x/max;
+	ymax=(float)y/max;
+	zmax=(float)z/max;
 
 	noOfvertices = x * y * z;
 	vertices = new float[noOfvertices * 4];
@@ -274,17 +251,8 @@ static void CreateVertexBuffer()
 		}
 	}
 
-	//cout<<"checkpoint1"<<endl;
-	// float zincr = (float)1 / z;
-	// float slice = 0.5;
-	// //int k = slice / zincr;
-	// if (slice == 1)
-	// 	k--;
-	// float *newVertices = new float[noOfvertices * 3];
-	// unsigned int *indices = new unsigned int[noOfIndices * 4];
 
 	ll newVIndex = 0;
-	//cout<<newVIndex<<endl;
 	for (int k = 0; k < z - 1; k++)
 	{
 
@@ -377,14 +345,14 @@ static void CreateVertexBuffer()
 
 	GL_CALL(glGenBuffers(1, &VBCube));
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBCube));
-	GL_CALL(glBufferData(GL_ARRAY_BUFFER, 8 * 3 * sizeof(float), newvertices, GL_STATIC_DRAW));
+	GL_CALL(glBufferData(GL_ARRAY_BUFFER, 8 * 3 * sizeof(float), cubevertices, GL_STATIC_DRAW));
 
 	GL_CALL(glEnableVertexAttribArray(0));
 	GL_CALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 3 * sizeof(float), 0));
 
 	GL_CALL(glGenBuffers(1, &IBCube));
 	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBCube));
-	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 24 * sizeof(unsigned int), indices, GL_STATIC_DRAW));
+	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 24 * sizeof(unsigned int), cubeindices, GL_STATIC_DRAW));
 }
 
 static void AddShader(GLuint ShaderProgram, const char *pShaderText, GLenum ShaderType)
@@ -468,7 +436,7 @@ static void CompileShaders()
 	gWorldLocation = glGetUniformLocation(ShaderProgram, "gWorld");
 	lightpos_location = glGetUniformLocation(ShaderProgram, "lightPos");
 	view_location = glGetUniformLocation(ShaderProgram, "viewPos");
-	objColor_location = glGetUniformLocation(ShaderProgram, "objectcolor");
+	objColor_location = glGetUniformLocation(ShaderProgram, "objcolor");
 }
 
 /********************************************************************
@@ -495,59 +463,58 @@ static void onDisplay()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//glPointSize(5);
 
-	Matrix4f transform, scaleMat, translateMat, rotateMat, transformcube;
+	Matrix4f  scaleMat, translateMat, rotateMat, transformcube;
 
-	// for object
-	transform.InitIdentity();
-	// scaleMat.InitScaleTransform(0.03f,0.03f,0.03f);
-	// transform=scaleMat*transform;
 	transformcube.InitIdentity();
 
-	// Matrix4f persProjection;
-	// PersProjInfo proj(90.0f, 1.0f, 1.0f, +1.0f, -1.0f);
-	// persProjection.InitPersProjTransform(proj);
-	// transformcube = persProjection * transformcube;
-
-	// glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transformcube.m[0][0]);
-	glUniform1f(objColor_location, 0);
-
-	// glUniform1f(objColor_location,1);
-
-	scaleMat.InitScaleTransform(0.9f, 0.9f, 0.9f);
-	transform = scaleMat * transform;
-
+	translateMat.InitTranslationTransform(-xmax/2,-ymax/2,-zmax/2);
+	transformcube=translateMat*transformcube;
 
 	rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),M_PI);
-	transform=rotateMat*transform;
+	transformcube=rotateMat*transformcube;
 
-	translateMat.InitTranslationTransform(0.5,0.5,0);
-	transform=translateMat*transform;
+	scaleMat.InitScaleTransform(1.3f, 1.3f, 1.3f);
+	 transformcube = scaleMat * transformcube;
 
 	if(choice==1){
 		rotateMat.InitAxisRotateTransform(Vector3f(1,0,0),rotateX);
-		transform=rotateMat*transform;
+		transformcube=rotateMat*transformcube;
 	}
 
 	if(choice==2){
 		rotateMat.InitAxisRotateTransform(Vector3f(0,1,0),rotateY);
-		transform=rotateMat*transform;
+		transformcube=rotateMat*transformcube;
 	}
 
 	if(choice==3){
 		rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),rotateZ);
-		transform=rotateMat*transform;
+		transformcube=rotateMat*transformcube;
 	
 	}
 
+	translateMat.InitTranslationTransform(0.0f, 0.0f, +1.8f);
+	transformcube=translateMat*transformcube;
+
+	Matrix4f persProjection;
+	PersProjInfo proj(90.0f, 1.0f, 1.0f, +1.0f, -1.0f);
+	persProjection.InitPersProjTransform(proj);
+	transformcube = persProjection * transformcube;
+
+	//////Cube
 	
-	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transform.m[0][0]);
-	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
+	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transformcube.m[0][0]);
+	glUniform3f(objColor_location, 0,0,0);
 	glBindVertexArray(VACube);
 	glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, nullptr);
-
+	
+	/////object
+	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transformcube.m[0][0]);
+	glUniform3f(objColor_location, 1,0,0);
 	glBindVertexArray(VAO);
+	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, nullptr);
 
+	
 
 	/* check for any errors when rendering */
 	GLenum errorCode = glGetError();
