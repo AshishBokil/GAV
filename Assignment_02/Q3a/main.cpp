@@ -22,13 +22,13 @@ int theWindowWidth = 1500, theWindowHeight = 1000;
 int theWindowPositionX = 40, theWindowPositionY = 40;
 bool isFullScreen = true;
 bool isAnimating = true;
-float rotation = 0.00f, rotateLight = 0.00f;
+float rotation = 0.00f, rotateLight = 0.00f,rotateX=0,rotateY=0,rotateZ=0;
 float translation = 0.2f;
 float nextX = 0.f, nextY = 0.0f;
 float x = 0.0f, y = -1.0f;
 int choicelight = 0, choice = 0;
 //int noOfPoints=500000;
-GLuint VBO, VAO, IBO, IAO;
+GLuint VBO, VAO, IBO, IAO,VBCube,IBCube,VACube;
 GLuint gWorldLocation, lightpos_location, view_location,objColor_location;
 unsigned long noOfvertices, noOfIndices;
 /*model*/
@@ -42,7 +42,8 @@ const char *pFSFileName = "shader.fs";
   Utility functions
  */
 Matrix4f World;
-
+float xmax,ymax,zmax;
+ll v=50;   /// Scalar value
 /* post: compute frames per second and display in window's title bar */
 
 // The error handling function is copied from youtube channel "The Cherno"
@@ -91,7 +92,7 @@ void computeFPS()
 	}
 }
 
-ll v=50;
+
 
 static float result(float a,float b,float sa,float sb){
 		float ratio=v/(sa+sb);
@@ -122,6 +123,10 @@ static void CreateVertexBuffer()
 	cout << x << " " << y << " " << z << endl;
 
 	noOfvertices = x * y * z;
+	int max=(x>y)?(x>z?x:z):(y>z?y:z);
+	xmax=(float)x/max;
+	ymax=(float)y/max;
+	zmax=(float)z/max;
 	//cout << noOfvertices << endl;
 
 	float *vertices = new float[noOfvertices * 4];
@@ -138,9 +143,9 @@ static void CreateVertexBuffer()
 			for (int i = 0; i < x; i++)
 			{
 				ll pos = k * y * x + j * x + i;
-				vertices[4 * pos + 0] = (float)i / (x-1);
-				vertices[4 * pos + 1] = (float)j / (y-1);
-				vertices[4 * pos + 2] = (float)k / (z-1);
+				vertices[4 * pos + 0] = ((float)i / (x - 1))*((float)x/max);
+				vertices[4 * pos + 1] = ((float)j / (y - 1))*((float)y/max);
+				vertices[4 * pos + 2] = ((float)k / (z - 1))*((float)z/max);
 				fscanf(input, "%f", &vertices[4 * pos + 3]);
 			//	data[t++]=vertices[4 * pos + 3];
 			}
@@ -148,8 +153,8 @@ static void CreateVertexBuffer()
 	}
 	
 
-	float zincr = (float)1 / z;	
-	float slice = 0.5;
+	float zincr = (float)zmax / z;	
+	float slice = 0.35;
 	int k = slice / zincr;
 	if (slice == 1)
 		k--;
@@ -256,6 +261,38 @@ static void CreateVertexBuffer()
 	// 	}
 
 	// exit(0);
+	///////Generate cube
+	Vector3f cubevertices[8]={
+		Vector3f(0,0,0),
+		Vector3f((float)x/max,0,0),
+		Vector3f(0,(float)y/max,0),
+		Vector3f((float)x/max,(float)y/max,0),
+		Vector3f(0,0,(float)z/max),
+		Vector3f((float)x/max,0,(float)z/max),
+		Vector3f(0,(float)y/max,(float)z/max),
+		Vector3f((float)x/max,(float)y/max,(float)z/max)
+
+	};
+
+	unsigned int cubeindices[24]={
+		0,1,
+		0,2,
+		0,4,
+		1,3,
+		1,5,
+		2,3,
+		2,6,
+		3,7,
+		4,5,
+		4,6,
+		5,7,
+		6,7
+	};
+
+
+	glGenVertexArrays(1, &VAO);
+	glBindVertexArray(VAO);
+
 	GL_CALL(glGenBuffers(1, &VBO));
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
 	GL_CALL(glBufferData(GL_ARRAY_BUFFER, newVIndex * 3 * sizeof(float), newVertices, GL_STATIC_DRAW));
@@ -270,6 +307,21 @@ static void CreateVertexBuffer()
 	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO));
 	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, noOfIndices * sizeof(unsigned int), indices, GL_STATIC_DRAW));
 
+
+	///For Cube
+	glGenVertexArrays(1, &VACube);
+	glBindVertexArray(VACube);
+
+	GL_CALL(glGenBuffers(1, &VBCube));
+	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBCube));
+	GL_CALL(glBufferData(GL_ARRAY_BUFFER, 8 * 3 * sizeof(float), cubevertices, GL_STATIC_DRAW));
+
+	GL_CALL(glEnableVertexAttribArray(0));
+	GL_CALL(glVertexAttribPointer(0, 3, GL_FLOAT, GL_TRUE, 3 * sizeof(float), 0));
+
+	GL_CALL(glGenBuffers(1, &IBCube));
+	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBCube));
+	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 24 * sizeof(unsigned int), cubeindices, GL_STATIC_DRAW));
 }
 
 static void AddShader(GLuint ShaderProgram, const char *pShaderText, GLenum ShaderType)
@@ -353,7 +405,7 @@ static void CompileShaders()
 	gWorldLocation = glGetUniformLocation(ShaderProgram, "gWorld");
 	lightpos_location = glGetUniformLocation(ShaderProgram, "lightPos");
 	view_location = glGetUniformLocation(ShaderProgram, "viewPos");
-	objColor_location =	glGetUniformLocation(ShaderProgram, "objectcolor");
+	objColor_location =	glGetUniformLocation(ShaderProgram, "objcolor");
 }
 
 /********************************************************************
@@ -380,35 +432,53 @@ static void onDisplay()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//glPointSize(5);
 
-	Matrix4f transform, scaleMat, translateMat, rotateMat, transformcube;
+		Matrix4f  scaleMat, translateMat, rotateMat, transformcube;
 
-	// for object
-	transform.InitIdentity();
-	// scaleMat.InitScaleTransform(0.03f,0.03f,0.03f);
-	// transform=scaleMat*transform;
 	transformcube.InitIdentity();
 
-	// Matrix4f persProjection;
-	// PersProjInfo proj(90.0f, 1.0f, 1.0f, +1.0f, -1.0f); 
-	// persProjection.InitPersProjTransform(proj);
-	// transformcube = persProjection * transformcube;
-
-	// glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transformcube.m[0][0]);
-	glUniform1f(objColor_location,0);
-
-
-	// glUniform1f(objColor_location,1);
-
-	scaleMat.InitScaleTransform(0.9f,0.9f,0.9f);
-	transform=scaleMat*transform;
+	translateMat.InitTranslationTransform(-xmax/2,-ymax/2,-zmax/2);
+	transformcube=translateMat*transformcube;
 
 	rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),M_PI);
-	transform=rotateMat*transform;
+	transformcube=rotateMat*transformcube;
 
-	translateMat.InitTranslationTransform(0.5,0.5,0);
-	transform=translateMat*transform;
+	scaleMat.InitScaleTransform(1.3f, 1.3f, 1.3f);
+	 transformcube = scaleMat * transformcube;
 
-	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transform.m[0][0]);
+	if(choice==1){
+		rotateMat.InitAxisRotateTransform(Vector3f(1,0,0),rotateX);
+		transformcube=rotateMat*transformcube;
+	}
+
+	if(choice==2){
+		rotateMat.InitAxisRotateTransform(Vector3f(0,1,0),rotateY);
+		transformcube=rotateMat*transformcube;
+	}
+
+	if(choice==3){
+		rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),rotateZ);
+		transformcube=rotateMat*transformcube;
+	
+	}
+
+	translateMat.InitTranslationTransform(0.0f, 0.0f, +1.8f);
+	transformcube=translateMat*transformcube;
+
+	Matrix4f persProjection;
+	PersProjInfo proj(90.0f, 1.0f, 1.0f, +1.0f, -1.0f);
+	persProjection.InitPersProjTransform(proj);
+	transformcube = persProjection * transformcube;
+
+	//////Cube
+	
+	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transformcube.m[0][0]);
+
+	glUniform3f(objColor_location, 0,0,0);
+	glBindVertexArray(VACube);
+	glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, nullptr);
+	
+	glUniform3f(objColor_location, 1,0,0);
+	glBindVertexArray(VAO);
 	glDrawElements(GL_LINES, noOfIndices , GL_UNSIGNED_INT, nullptr);
 
 	/* check for any errors when rendering */
@@ -498,20 +568,18 @@ static void onAlphaNumericKeyPress(unsigned char key, int x, int y)
 		break;
 		/* reset */
 	case '1':
-		if (choicelight != 1)
-			choicelight = 1;
-		else
-			choicelight = 0;
-		//rotateLight+=1;
+		choice=1;
+		rotateX+=0.05;
 		break;
 
 	case '2':
-		if (choice != 2)
-		{
-			choice = 2;
-		}
-		else
-			choice = 0;
+		choice=2;
+		rotateY+=0.05;
+		break;
+
+	case '3':
+		choice=3;
+		rotateZ+=0.05;
 		break;
 
 	case 'r':
