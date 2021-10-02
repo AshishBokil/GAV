@@ -2,8 +2,9 @@
 
 layout (location = 0) in vec3 aPos;
 uniform mat4 gWorld;
-
+uniform vec3 objcolor;
 out vec3 TexCoord;  
+out vec3 Objcolor;
 //out float Scalar;
 
 void main()
@@ -13,6 +14,7 @@ void main()
     // gl_Position = vec4(0.5 * aPos, 1.0);
     // FragPos = vec3(gl_Position);
     TexCoord = aPos;
+    Objcolor=objcolor;
    // Scalar =aScalar;
     
 }
