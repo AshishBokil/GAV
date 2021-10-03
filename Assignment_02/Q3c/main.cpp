@@ -49,6 +49,8 @@ float *vertices;
 Vector3f *newvertices;
 unsigned int *indices;
 ll newindex = 0;
+ll v = 50;		///Iso value or scalar value
+
 ll thIndices[6][4] = {
 	0, 1, 2, 4,
 	0, 1, 3, 4,
@@ -107,7 +109,7 @@ void computeFPS()
 	}
 }
 
-ll v = 50;
+
 
 
 static Vector3f result(Vector4f a, Vector4f b)
