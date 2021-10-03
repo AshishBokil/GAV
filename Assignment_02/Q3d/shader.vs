@@ -8,8 +8,8 @@ out vec3 Incr;
 void main()
 {  
     
-    gl_Position =gWorld* vec4(aPos.xyz, 1.0);
-    Pos =vec4(gl_Position.xyz,aPos.w);
+    gl_Position = gWorld* vec4(aPos.xyz, 1.0);
+    Pos = vec4(aPos.xyz,aPos.w);
     // Objcolor=objcolor;
   //  Incr=incr;
 }

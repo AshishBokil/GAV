@@ -50,7 +50,7 @@ float *vertices;
 Vector3f *newvertices;
 unsigned int *indices;
 ll newindex = 0;
-float v = 50;		///Iso value or scalar value
+float v = 5;		///Iso value or scalar value
 Vector3f incr;
 ll thIndices[6][4] = {
 	0, 1, 2, 4,
@@ -243,6 +243,8 @@ static void CreateVertexBuffer()
 
 	incr=Vector3f((float)xmax/x,(float)ymax/y,(float)zmax/z);
 
+	cout << "incr: " << incr.x << ", " << incr.y << ", " << incr.z << endl;
+
 	for (int k = 0; k < z; k++)
 	{
 		for (int j = 0; j < y; j++)
@@ -280,7 +282,7 @@ static void CreateVertexBuffer()
 				ll pos=(i + x * j + x * y * k);
 				//cout<<pos<<endl;
 				origins[o]=Vector4f(vertices[4* pos+0],vertices[4* pos+1],vertices[4*pos+2],vertices[4*pos+3]);
-			//	cout<<origins[o].x<<" "<<origins[o].y<<" "<<origins[o].z<<" "<<origins[o].w<<endl;
+				// cout<<origins[o].x<<" "<<origins[o].y<<" "<<origins[o].z<<" "<<origins[o].w<<endl;
 				origIndices[o]=o;
 				o++;
 				// ll cell[8];
@@ -454,7 +456,7 @@ static void CompileShaders()
 
 	AddShader(ShaderProgram, vs.c_str(), GL_VERTEX_SHADER);
 	AddShader(ShaderProgram, fs.c_str(), GL_FRAGMENT_SHADER);
-	// AddShader(ShaderProgram, gs.c_str(), GL_GEOMETRY_SHADER);
+	AddShader(ShaderProgram, gs.c_str(), GL_GEOMETRY_SHADER);
 
 	GLint Success = 0;
 	GLchar ErrorLog[1024] = {0};
@@ -482,7 +484,7 @@ static void CompileShaders()
 	lightpos_location = glGetUniformLocation(ShaderProgram, "lightPos");
 	view_location = glGetUniformLocation(ShaderProgram, "viewPos");
 	objColor_location = glGetUniformLocation(ShaderProgram, "objcolor");
-	incr_location = glGetUniformLocation(ShaderProgram, "increment");
+	incr_location = glGetUniformLocation(ShaderProgram, "Incr");
 	iso_location = glGetUniformLocation(ShaderProgram, "iso");
 }
 
