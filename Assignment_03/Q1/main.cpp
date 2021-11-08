@@ -67,6 +67,7 @@ ll thIndices[6][4] = {
 struct dst{
 	int min_iso;
 	int max_iso;
+	ll orig_Index;
 	dst *child[8];
 };
 
@@ -102,8 +103,23 @@ int getIndex(int c,int i,int j,int k){
 Pair* initDST(dst *root,float xa,float xb,float ya,float yb,float za,float zb){
 	//cout<<"lenx="<<xb-xa<<" leny="<<yb-ya<<" lenz="<<zb-za<<endl;
 //if(xb-xa<xinc)return NULL;
-	if((xb-xa)==xinc && (yb-ya)==yinc && (zb-za)==zinc){
+
+	if(xb==1 && (xb-xa)==xinc || yb==1 && (yb-ya)==yinc || zb==1 && (zb-za)==zinc){
 		int i=(int)xa/xinc, j=(int)ya/yinc, k=(int)za/zinc;
+		int index=getIndex(0,i,j,k);
+		struct Pair *p=new Pair;
+		p->minval=0;
+		p->maxval=0;
+		root->min_iso=0;
+		root->max_iso=0;
+		root->orig_Index=index;
+		return p;
+	}
+	if((xb-xa)==xinc && (yb-ya)==yinc && (zb-za)==zinc){
+
+		int i=(int)(xa/xinc), j=(int)(ya/yinc), k=(int)(za/zinc);
+	//	cout<<i<<" "<<j<<" "<<k<<endl;
+		//int index=getIndex(0,i,j,k);
 		int min=9999,max=0;
 		struct Pair *p=new Pair;
 		for(int l=0;l<8;l++){
@@ -117,7 +133,9 @@ Pair* initDST(dst *root,float xa,float xb,float ya,float yb,float za,float zb){
 		p->maxval=max;
 		root->min_iso=p->minval;
 		root->max_iso=p->maxval;
-	//	cout<<root->min_iso<<" "<<root->max_iso<<endl;
+		root->orig_Index=4*getIndex(0,i,j,k);
+	//	cout<<"Origin index="<<root->orig_Index<<"\n\n";
+		 //cout<<root->min_iso<<" "<<root->max_iso<<endl;
 		return p;
 		
 	}
@@ -128,9 +146,10 @@ Pair* initDST(dst *root,float xa,float xb,float ya,float yb,float za,float zb){
 		Pair *p=new Pair;
 		p->maxval=0;
 		p->minval=999;
-		for(int i=0;i<2;i++){
+		for(int k=0;k<2;k++){
 			for(int j=0;j<2;j++){
-				for(int k=0;k<2;k++){
+				for(int i=0;i<2;i++){
+					
 					float xac=xa,xbc=xb,yac=ya,ybc=yb,zac=za,zbc=zb;
 					int index=(i + 2 * j + 2 * 2 * k);
 					root->child[index]=getNode();
@@ -144,7 +163,7 @@ Pair* initDST(dst *root,float xa,float xb,float ya,float yb,float za,float zb){
 					if(k==1)zac+=(zbc-zac)/2;
 					else zbc-=(zbc-zac)/2;
 
-					//cout<<"lenx="<<xbc<<" "<<xac<<" leny="<<ybc<<" "<<yac<<" lenz="<<zbc<<" "<<zac<<endl;
+					//cout<<"x=("<<xac<<","<<xbc<<")\tleny=("<<yac<<" "<<ybc<<")\tlenz=("<<zac<<" "<<zbc<<")\n";
 					//exit(0);
 					Pair *p1=initDST(root->child[index],xac,xbc,yac,ybc,zac,zbc);
 					if(p1->minval<p->minval)p->minval=p1->minval;
@@ -156,6 +175,7 @@ Pair* initDST(dst *root,float xa,float xb,float ya,float yb,float za,float zb){
 
 		 root->min_iso=p->minval;
 		 root->max_iso=p->maxval;
+		 root->orig_Index=getIndex(0,xa,ya,za);
 		 return p;
 	}
 
@@ -165,7 +185,7 @@ void printdst(dst *root,int level){
 	//cout<<root<<endl;
 	
 	if(root==NULL)return;
-	cout<<"level: "<<level<<" min="<<root->min_iso<<" max="<<root->max_iso<<"\n";
+	cout<<"level: "<<level<<"\tmin="<<root->min_iso<<"\tmax="<<root->max_iso<<"\torig_Index="<<root->orig_Index<<"\n";
 	for(int i=0;i<8;i++){
 		printdst(root->child[i],level+1);
 	}
@@ -360,9 +380,9 @@ static void CreateVertexBuffer()
 	xinc=(float)1/x;
 	yinc=(float)1/y;
 	zinc=(float)1/z;
-	xmax=x;
-	ymax=y;
-	zmax=z;
+	xmax=x+1;
+	ymax=y+1;
+	zmax=z+1;
 	cout<<" xinc:"<<xinc<<" yinc:"<<yinc<<" zinc:"<<zinc<<endl;
 	cout<<" xmax:"<<xmax<<" ymax:"<<ymax<<" zmax:"<<zmax<<endl;
 	// int max=(x>y)?(x>z?x:z):(y>z?y:z);
@@ -370,17 +390,23 @@ static void CreateVertexBuffer()
 	// ymax=(float)y/max;
 	// zmax=(float)z/max;
 
-	noOfvertices = x * y * z;
+	noOfvertices = (x+1) * (y+1) * (z+1);
 	vertices = new float[noOfvertices * 4];
 	newvertices = new Vector3f[noOfvertices * 36];
 	indices = new unsigned int[noOfvertices * 36];
-	for (int k = 0; k < z; k++)
+	for (int k = 0; k <= z; k++)
 	{
-		for (int j = 0; j < y; j++)
+		for (int j = 0; j <= y; j++)
 		{
-			for (int i = 0; i < x; i++)
+			for (int i = 0; i <= x; i++)
 			{
 				ll pos = k * y * x + j * x + i;
+				if(i==x || j==y || k==z){
+					vertices[4 * pos + 0] = ((float)i / (x - 1))/**((float)x/max)*/;
+					vertices[4 * pos + 1] = ((float)j / (y - 1))/**((float)y/max)*/;
+					vertices[4 * pos + 2] = ((float)k / (z - 1))/**((float)z/max)*/;
+					vertices[4 * pos + 3] = vertices[4* (pos-1) + 3];
+				}
 				vertices[4 * pos + 0] = ((float)i / (x - 1))/**((float)x/max)*/;
 				vertices[4 * pos + 1] = ((float)j / (y - 1))/**((float)y/max)*/;
 				vertices[4 * pos + 2] = ((float)k / (z - 1))/**((float)z/max)*/;
