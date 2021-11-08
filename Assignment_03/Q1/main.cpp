@@ -61,6 +61,33 @@ ll thIndices[6][4] = {
 
 };
 
+	///////Generate cube
+	Vector3f cubevertices[8] = {
+		Vector3f(0, 0, 0),
+		Vector3f(1, 0, 0),
+		Vector3f(0, 1, 0),
+		Vector3f(1, 1, 0),
+		Vector3f(0, 0, 1),
+		Vector3f(1, 0, 1),
+		Vector3f(0, 1, 1),
+		Vector3f(1, 1, 1)
+
+	};
+
+	unsigned int cubeindices[24] = {
+		0, 1,
+		0, 2,
+		0, 4,
+		1, 3,
+		1, 5,
+		2, 3,
+		2, 6,
+		3, 7,
+		4, 5,
+		4, 6,
+		5, 7,
+		6, 7};
+
 /***********  domainSearchTree *******/
 
 struct dst
@@ -278,9 +305,44 @@ void getCell(ll* cell,int i, int j, int k)
 //	return cell;
 }
 
-void dstSearch(dst *root,float iso){
-	if(root->child[0]==NULL){
-		
+void getCellWithIndex(ll* cell,ll index)
+{
+	//ll cell[8];
+
+	cell[0] = index;
+	cell[1] = index+1;
+	cell[2] = index+ymax;
+	cell[3] = index+1+ymax;
+	cell[4] = index+xmax*ymax;
+	cell[5] = index+1+xmax*ymax;
+	cell[6] = index+ymax+xmax*ymax;
+	cell[7] = index+1+ymax+xmax*ymax;
+
+	// for(int i=0;i<8;i++){
+	// 	cout<<cell[i]<<endl;
+	// }
+//	return cell;
+}
+
+void dstSearch(dst *root,int level){
+	if(root->child[0]==NULL ){
+		if(root->min_iso<=iso && root->max_iso>=iso){
+		//	cout<<"Origin index="<<root->orig_Index<<"\n\n";
+			ll cell[8];
+			getCellWithIndex(cell,root->orig_Index);
+			//printcell(cell);
+			 tetra(cell);
+		}
+	}
+
+	else{
+		for(int i=0;i<8;i++){
+			if(root->child[i]->min_iso<=iso && root->child[i]->max_iso>=iso){
+			//	cout<<"level="<< level <<"  Origin index(="<< root->orig_Index <<"\n\n";
+				dstSearch(root->child[i],level+1);
+				
+			}
+		}
 	}
 }
 
@@ -291,25 +353,25 @@ void printcell(ll* cell){
 	}
 }
 
-void domainSearch(dst* root){
-	
-}
 
 Pair *initDST(dst *root, float xa, float xb, float ya, float yb, float za, float zb)
 {
 	//cout<<"lenx="<<xb-xa<<" leny="<<yb-ya<<" lenz="<<zb-za<<endl;
 	//if(xb-xa<xinc)return NULL;
+	int i = (int)(xa / xinc), j = (int)(ya / yinc), k = (int)(za / zinc);
+	ll rootIndex=getIndex(0,i,j,k);
+	root->orig_Index = rootIndex;
 
 	if (xb == 1 && (xb - xa) == xinc || yb == 1 && (yb - ya) == yinc || zb == 1 && (zb - za) == zinc)
 	{
-		int i = (int)xa / xinc, j = (int)ya / yinc, k = (int)za / zinc;
-		int index = getIndex(0, i, j, k);
+		//int i = (int)xa / xinc, j = (int)ya / yinc, k = (int)za / zinc;
+		//ll index = getIndex(0, i, j, k);
 		struct Pair *p = new Pair;
 		p->minval = 0;
 		p->maxval = 0;
 		root->min_iso = 0;
 		root->max_iso = 0;
-		root->orig_Index = index;
+		//root->orig_Index = index;
 		return p;
 	}
 	if ((xb - xa) == xinc && (yb - ya) == yinc && (zb - za) == zinc)
@@ -322,7 +384,7 @@ Pair *initDST(dst *root, float xa, float xb, float ya, float yb, float za, float
 		struct Pair *p = new Pair;
 		for (int l = 0; l < 8; l++)
 		{
-			int index = getIndex(l, i, j, k);
+			ll index = getIndex(l, i, j, k);
 			// cout<<"index:"<<index<<" vertex#= "<<4*index+3<<" iso="<<vertices[4*index+3]<<endl;
 			if (vertices[4 * index + 3] < min)
 				min = vertices[4 * index + 3];
@@ -335,14 +397,14 @@ Pair *initDST(dst *root, float xa, float xb, float ya, float yb, float za, float
 		root->min_iso = p->minval;
 		root->max_iso = p->maxval;
 
-		if(root->min_iso<=iso && root->max_iso>=iso){
-			ll cell[8];
-			getCell(cell,i,j,k);
-			//printcell(cell);
-			 tetra(cell);
-		}		
+		// if(root->min_iso<=iso && root->max_iso>=iso){
+		// 	ll cell[8];
+		// 	getCell(cell,i,j,k);
+		// 	//printcell(cell);
+		// 	 tetra(cell);
+		// }		
 
-		root->orig_Index = 4 * getIndex(0, i, j, k);
+		//root->orig_Index = 4 * getIndex(0, i, j, k);
 		//	cout<<"Origin index="<<root->orig_Index<<"\n\n";
 		//cout<<root->min_iso<<" "<<root->max_iso<<endl;
 		return p;
@@ -394,11 +456,28 @@ Pair *initDST(dst *root, float xa, float xb, float ya, float yb, float za, float
 
 		root->min_iso = p->minval;
 		root->max_iso = p->maxval;
-		root->orig_Index = getIndex(0, xa, ya, za);
+	//	root->orig_Index = getIndex(0, xa, ya, za);
 		return p;
 	}
 }
 
+void printchildIndexes(dst *root,int level){
+	if(root->child[0]==NULL){
+		cout<<"level: "<<level<<"  "<<root->orig_Index<<" ->\n ";
+		return;
+	}
+	//cout<<"level: "<<level<<"  "<<root->orig_Index<<" -> ";
+	// for(int i=0;i<8;i++){
+	// 	cout<<root->child[i]->orig_Index<<" ";
+	// }
+	//cout<<endl;
+
+	for(int i=0;i<8;i++){
+		printchildIndexes(root->child[i],level+1);
+	}
+
+
+}
 void printdst(dst *root, int level)
 {
 	//cout<<root<<endl;
@@ -415,12 +494,13 @@ void printdst(dst *root, int level)
 static void CreateVertexBuffer()
 {
 	//cin>>iso;
-	iso=25;
+	iso=49;
+	v=iso;
 	//cout<<"iso="<<iso<<endl;
 	//exit(0);
 	FILE *input;
 	unsigned int x, y, z;
-	input = fopen("fuel.txt", "r");
+	input = fopen("hydrogen.txt", "r");
 	if (input == NULL)
 	{
 		cout << "error opening file";
@@ -471,32 +551,11 @@ static void CreateVertexBuffer()
 		}
 	}
 
-	dst *root = getNode();
-	Pair *p = initDST(root, 0, 1, 0, 1, 0, 1);
-	cout << " min=" << p->minval << " max=" << p->maxval << "\n\n";
-	cout<<"newindex="<<newindex<<endl;
-	//exit(0);
-//	printdst(root, 0);
-
+		
 
 	ll newVIndex = 0;
-	// for (int k = 0; k < z - 1; k++)
-	// {
-
-	// 	for (int j = 0; j < y - 1; j++)
-	// 	{
-	// 		for (int i = 0; i < x - 1; i++)
-	// 		{
-
-	// 			// for(int l=0;l<8;l++)cout<<cell[l]<<" ";
-	// 			// cout<<endl;
-	// 		//	tetra(getCell(i, j, k));
-	// 		}
-	// 	}
-	// }
-	//cout<<newVIndex<<endl;
-	noOfIndices = newindex;
-	int t = 0;
+	
+	//int t = 0;
 	// for (int i = 0; i < newindex; i++)
 	// {
 
@@ -511,33 +570,30 @@ static void CreateVertexBuffer()
 	//cout << newindex << " " << t << endl;
 	// exit(0);
 
-	///////Generate cube
-	Vector3f cubevertices[8] = {
-		Vector3f(0, 0, 0),
-		Vector3f(1, 0, 0),
-		Vector3f(0, 1, 0),
-		Vector3f(1, 1, 0),
-		Vector3f(0, 0, 1),
-		Vector3f(1, 0, 1),
-		Vector3f(0, 1, 1),
-		Vector3f(1, 1, 1)
 
-	};
 
-	unsigned int cubeindices[24] = {
-		0, 1,
-		0, 2,
-		0, 4,
-		1, 3,
-		1, 5,
-		2, 3,
-		2, 6,
-		3, 7,
-		4, 5,
-		4, 6,
-		5, 7,
-		6, 7};
+	
+}
 
+void getData(){
+
+	newvertices = new Vector3f[noOfvertices * 36];
+	indices = new unsigned int[noOfvertices * 36];
+	newindex=0;
+	dst *root = getNode();
+	Pair *p = initDST(root, 0, 1, 0, 1, 0, 1);
+	 dstSearch(root,0);
+	//printchildIndexes(root,0);
+
+	//cout << " min=" << p->minval << " max=" << p->maxval << "\n\n";
+	cout<<"iso="<<iso<<endl;
+	cout<<"newindex="<<newindex<<endl;
+//	exit(0);
+//	printdst(root, 0);
+	noOfIndices = newindex;
+}
+
+void parseBuffers(){
 	GL_CALL(glGenVertexArrays(1, &VAO));
 	GL_CALL(glBindVertexArray(VAO));
 
@@ -569,6 +625,7 @@ static void CreateVertexBuffer()
 	GL_CALL(glGenBuffers(1, &IBCube));
 	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBCube));
 	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 24 * sizeof(unsigned int), cubeindices, GL_STATIC_DRAW));
+
 }
 
 static void AddShader(GLuint ShaderProgram, const char *pShaderText, GLenum ShaderType)
@@ -668,6 +725,8 @@ void onInit(int argc, char *argv[])
 	/* by default the back ground color is black */
 	glClearColor(0.0f, 0.0f, 0.0f, 1.0f);
 	CreateVertexBuffer();
+	getData();
+	parseBuffers();
 	CompileShaders();
 
 	/* set to draw in window based on depth  */
@@ -801,10 +860,14 @@ static void onMouseButtonPress(int button, int state, int x, int y)
 	{
 		// Left button pressed
 		//	glutPostRedisplay();
+		iso++;
+		v=iso;
 	}
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 	{
 		// Left button un pressed
+		getData();
+		parseBuffers();
 	}
 	/* notify window that it has to be re-rendered */
 	glutPostRedisplay();
@@ -834,6 +897,22 @@ static void onAlphaNumericKeyPress(unsigned char key, int x, int y)
 	case '3':
 		choice = 3;
 		rotateZ += 0.05;
+		break;
+
+	case '4':
+		//choice = 3;
+		//rotateZ += 0.05;
+		iso=iso+5;
+		v=iso;
+		getData();
+		parseBuffers();
+		break;
+
+	case '6':
+		iso=iso-5;
+		v=iso;
+		getData();
+		parseBuffers();
 		break;
 
 	case 'r':
