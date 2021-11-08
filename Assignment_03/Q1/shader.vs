@@ -12,5 +12,5 @@ void main()
     
     gl_Position =gWorld* vec4(aPos, 1.0);
     Pos =aPos;
-    Objcolor=objcolor;
+   Objcolor=objcolor;
 }

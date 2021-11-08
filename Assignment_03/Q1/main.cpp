@@ -22,13 +22,13 @@ int theWindowWidth = 1500, theWindowHeight = 1000;
 int theWindowPositionX = 40, theWindowPositionY = 40;
 bool isFullScreen = true;
 bool isAnimating = true;
-float rotation = 0.00f, rotateLight = 0.00f,rotateX=0,rotateY=0,rotateZ=0;
+float rotation = 0.00f, rotateLight = 0.00f, rotateX = 0, rotateY = 0, rotateZ = 0;
 float translation = 0.2f;
 float nextX = 0.f, nextY = 0.0f;
 float x = 0.0f, y = -1.0f;
 int choicelight = 0, choice = 0;
 //int noOfPoints=500000;
-GLuint VBO, VAO, IBO, IAO,VBCube,IBCube,VACube;
+GLuint VBO, VAO, IBO, IAO, VBCube, IBCube, VACube;
 GLuint gWorldLocation, lightpos_location, view_location, objColor_location;
 unsigned long noOfvertices, noOfIndices;
 /*model*/
@@ -43,13 +43,13 @@ const char *pFSFileName = "shader.fs";
 
  */
 
-float xmax,ymax,zmax,xinc,yinc,zinc;
+float xmax, ymax, zmax, xinc, yinc, zinc,iso;
 Matrix4f World;
 float *vertices;
 Vector3f *newvertices;
 unsigned int *indices;
 ll newindex = 0;
-ll v = 50;		///Iso value or scalar value
+ll v = 50; ///Iso value or scalar value
 
 ll thIndices[6][4] = {
 	0, 1, 2, 4,
@@ -61,10 +61,10 @@ ll thIndices[6][4] = {
 
 };
 
-
 /***********  domainSearchTree *******/
 
-struct dst{
+struct dst
+{
 	int min_iso;
 	int max_iso;
 	ll orig_Index;
@@ -77,122 +77,38 @@ struct Pair
 	int maxval;
 };
 
-
-struct dst * getNode(){
-	struct dst *temp=new dst;
-	for(int i=0;i<8;i++){
-		temp->child[i]=NULL;
+struct dst *getNode()
+{
+	struct dst *temp = new dst;
+	for (int i = 0; i < 8; i++)
+	{
+		temp->child[i] = NULL;
 	}
 	return temp;
 }
 
-int getIndex(int c,int i,int j,int k){
-//	cout<<" i:"<<i<<" j:"<<j<<" k:"<<k;
-//	cout<<" xmax:"<<xmax<<" ymax:"<<ymax<<" zmax:"<<zmax;
-	if(c==0) return (i + xmax * j + xmax * ymax * k);
-	if(c==1) return ((i + 1) + xmax * j + xmax * ymax * k);
-	if(c==2) return (i + xmax * (j + 1) + xmax * ymax * k);
-	if(c==3) return ((i + 1) + xmax * (j + 1) + xmax * ymax * k);
-	if(c==4) return (i + xmax * j + xmax * ymax * (k + 1));
-	if(c==5) return ((i + 1) + xmax * j + xmax * ymax * (k + 1));
-	if(c==6) return (i + xmax * (j + 1) + xmax * ymax * (k + 1));
-	if(c==7) return ((i + 1) + xmax * (j + 1) + xmax * ymax * (k + 1));
+int getIndex(int c, int i, int j, int k)
+{
+	//	cout<<" i:"<<i<<" j:"<<j<<" k:"<<k;
+	//	cout<<" xmax:"<<xmax<<" ymax:"<<ymax<<" zmax:"<<zmax;
+	if (c == 0)
+		return (i + xmax * j + xmax * ymax * k);
+	if (c == 1)
+		return ((i + 1) + xmax * j + xmax * ymax * k);
+	if (c == 2)
+		return (i + xmax * (j + 1) + xmax * ymax * k);
+	if (c == 3)
+		return ((i + 1) + xmax * (j + 1) + xmax * ymax * k);
+	if (c == 4)
+		return (i + xmax * j + xmax * ymax * (k + 1));
+	if (c == 5)
+		return ((i + 1) + xmax * j + xmax * ymax * (k + 1));
+	if (c == 6)
+		return (i + xmax * (j + 1) + xmax * ymax * (k + 1));
+	if (c == 7)
+		return ((i + 1) + xmax * (j + 1) + xmax * ymax * (k + 1));
 	return -1;
 }
-
-Pair* initDST(dst *root,float xa,float xb,float ya,float yb,float za,float zb){
-	//cout<<"lenx="<<xb-xa<<" leny="<<yb-ya<<" lenz="<<zb-za<<endl;
-//if(xb-xa<xinc)return NULL;
-
-	if(xb==1 && (xb-xa)==xinc || yb==1 && (yb-ya)==yinc || zb==1 && (zb-za)==zinc){
-		int i=(int)xa/xinc, j=(int)ya/yinc, k=(int)za/zinc;
-		int index=getIndex(0,i,j,k);
-		struct Pair *p=new Pair;
-		p->minval=0;
-		p->maxval=0;
-		root->min_iso=0;
-		root->max_iso=0;
-		root->orig_Index=index;
-		return p;
-	}
-	if((xb-xa)==xinc && (yb-ya)==yinc && (zb-za)==zinc){
-
-		int i=(int)(xa/xinc), j=(int)(ya/yinc), k=(int)(za/zinc);
-	//	cout<<i<<" "<<j<<" "<<k<<endl;
-		//int index=getIndex(0,i,j,k);
-		int min=9999,max=0;
-		struct Pair *p=new Pair;
-		for(int l=0;l<8;l++){
-			int index=getIndex(l,i,j,k);
-			// cout<<"index:"<<index<<" vertex#= "<<4*index+3<<" iso="<<vertices[4*index+3]<<endl;
-			if(vertices[4*index+3]<min)min=vertices[4*index+3];
-			if(vertices[4*index+3]>max)max=vertices[4*index+3];
-		//	return p;
-		}
-		p->minval=min;
-		p->maxval=max;
-		root->min_iso=p->minval;
-		root->max_iso=p->maxval;
-		root->orig_Index=4*getIndex(0,i,j,k);
-	//	cout<<"Origin index="<<root->orig_Index<<"\n\n";
-		 //cout<<root->min_iso<<" "<<root->max_iso<<endl;
-		return p;
-		
-	}
-	else {
-		//root->child[0]=getNode();
-		// initDST(root->child[0],xmin,xmax/2,ymin,ymax/2,zmin,zmax/2);
-		
-		Pair *p=new Pair;
-		p->maxval=0;
-		p->minval=999;
-		for(int k=0;k<2;k++){
-			for(int j=0;j<2;j++){
-				for(int i=0;i<2;i++){
-					
-					float xac=xa,xbc=xb,yac=ya,ybc=yb,zac=za,zbc=zb;
-					int index=(i + 2 * j + 2 * 2 * k);
-					root->child[index]=getNode();
-
-					if(i==1)xac+=(xbc-xac)/2;
-					else xbc-=(xbc-xac)/2;
-
-					if(j==1)yac+=(ybc-yac)/2;
-					else ybc-=(ybc-yac)/2;
-
-					if(k==1)zac+=(zbc-zac)/2;
-					else zbc-=(zbc-zac)/2;
-
-					//cout<<"x=("<<xac<<","<<xbc<<")\tleny=("<<yac<<" "<<ybc<<")\tlenz=("<<zac<<" "<<zbc<<")\n";
-					//exit(0);
-					Pair *p1=initDST(root->child[index],xac,xbc,yac,ybc,zac,zbc);
-					if(p1->minval<p->minval)p->minval=p1->minval;
-					if(p1->maxval>p->maxval)p->maxval=p1->maxval;
-
-				}
-			}
-		}
-
-		 root->min_iso=p->minval;
-		 root->max_iso=p->maxval;
-		 root->orig_Index=getIndex(0,xa,ya,za);
-		 return p;
-	}
-
-}
-
-void printdst(dst *root,int level){
-	//cout<<root<<endl;
-	
-	if(root==NULL)return;
-	cout<<"level: "<<level<<"\tmin="<<root->min_iso<<"\tmax="<<root->max_iso<<"\torig_Index="<<root->orig_Index<<"\n";
-	for(int i=0;i<8;i++){
-		printdst(root->child[i],level+1);
-	}
-
-}
-
-
 
 /**********************************************/
 
@@ -244,9 +160,6 @@ void computeFPS()
 	}
 }
 
-
-
-
 static Vector3f result(Vector4f a, Vector4f b)
 {
 	float ratio = v / (a.w + b.w);
@@ -257,7 +170,6 @@ static Vector3f result(Vector4f a, Vector4f b)
 		ratio = 1 - ratio;
 	}
 	ans = Vector3f(a.x + ratio * diff.x, a.y + ratio * diff.y, a.z + ratio * diff.z);
-	
 
 	return ans;
 }
@@ -284,10 +196,9 @@ static void find_triangles(ll th[])
 			if (v1.w >= v && v2.w < v || v1.w < v && v2.w >= v)
 			{
 				temp[count] = result(v1, v2);
-		
+
 				count++;
 			}
-		
 		}
 	}
 	// cout<<"checkpoint3.3"<<endl;
@@ -314,7 +225,7 @@ static void find_triangles(ll th[])
 		indices[newindex] = newindex;
 		newindex++;
 	}
-	else if(count==3)
+	else if (count == 3)
 	{
 		newvertices[newindex] = temp[0];
 		indices[newindex] = newindex;
@@ -330,7 +241,7 @@ static void find_triangles(ll th[])
 	//	exit(0);
 }
 
-static void tetra(ll cell[])
+static void tetra(ll* cell)
 {
 	//cout<<"checkpoint2"<<endl;
 	for (int i = 0; i < 6; i++)
@@ -348,8 +259,9 @@ static void tetra(ll cell[])
 	}
 }
 
-ll* getCell(int i,int j,int k){
-	ll cell[8];
+void getCell(ll* cell,int i, int j, int k)
+{
+	//ll cell[8];
 
 	cell[0] = (i + xmax * j + xmax * ymax * k);
 	cell[1] = ((i + 1) + xmax * j + xmax * ymax * k);
@@ -359,15 +271,156 @@ ll* getCell(int i,int j,int k){
 	cell[5] = ((i + 1) + xmax * j + xmax * ymax * (k + 1));
 	cell[6] = (i + xmax * (j + 1) + xmax * ymax * (k + 1));
 	cell[7] = ((i + 1) + xmax * (j + 1) + xmax * ymax * (k + 1));
-	return cell;
 
+	// for(int i=0;i<8;i++){
+	// 	cout<<cell[i]<<endl;
+	// }
+//	return cell;
+}
+
+void dstSearch(dst *root,float iso){
+	if(root->child[0]==NULL){
+		
+	}
+}
+
+void printcell(ll* cell){
+	//cout<<" pointer ="<<cell<<endl;
+	for(int i=0;i<8;i++){
+		cout<<cell[i]<<endl;
+	}
+}
+
+void domainSearch(dst* root){
+	
+}
+
+Pair *initDST(dst *root, float xa, float xb, float ya, float yb, float za, float zb)
+{
+	//cout<<"lenx="<<xb-xa<<" leny="<<yb-ya<<" lenz="<<zb-za<<endl;
+	//if(xb-xa<xinc)return NULL;
+
+	if (xb == 1 && (xb - xa) == xinc || yb == 1 && (yb - ya) == yinc || zb == 1 && (zb - za) == zinc)
+	{
+		int i = (int)xa / xinc, j = (int)ya / yinc, k = (int)za / zinc;
+		int index = getIndex(0, i, j, k);
+		struct Pair *p = new Pair;
+		p->minval = 0;
+		p->maxval = 0;
+		root->min_iso = 0;
+		root->max_iso = 0;
+		root->orig_Index = index;
+		return p;
+	}
+	if ((xb - xa) == xinc && (yb - ya) == yinc && (zb - za) == zinc)
+	{
+
+		int i = (int)(xa / xinc), j = (int)(ya / yinc), k = (int)(za / zinc);
+		//	cout<<i<<" "<<j<<" "<<k<<endl;
+		//int index=getIndex(0,i,j,k);
+		int min = 9999, max = 0;
+		struct Pair *p = new Pair;
+		for (int l = 0; l < 8; l++)
+		{
+			int index = getIndex(l, i, j, k);
+			// cout<<"index:"<<index<<" vertex#= "<<4*index+3<<" iso="<<vertices[4*index+3]<<endl;
+			if (vertices[4 * index + 3] < min)
+				min = vertices[4 * index + 3];
+			if (vertices[4 * index + 3] > max)
+				max = vertices[4 * index + 3];
+			//	return p;
+		}
+		p->minval = min;
+		p->maxval = max;
+		root->min_iso = p->minval;
+		root->max_iso = p->maxval;
+
+		if(root->min_iso<=iso && root->max_iso>=iso){
+			ll cell[8];
+			getCell(cell,i,j,k);
+			//printcell(cell);
+			 tetra(cell);
+		}		
+
+		root->orig_Index = 4 * getIndex(0, i, j, k);
+		//	cout<<"Origin index="<<root->orig_Index<<"\n\n";
+		//cout<<root->min_iso<<" "<<root->max_iso<<endl;
+		return p;
+	}
+	else
+	{
+		//root->child[0]=getNode();
+		// initDST(root->child[0],xmin,xmax/2,ymin,ymax/2,zmin,zmax/2);
+
+		Pair *p = new Pair;
+		p->maxval = 0;
+		p->minval = 999;
+		for (int k = 0; k < 2; k++)
+		{
+			for (int j = 0; j < 2; j++)
+			{
+				for (int i = 0; i < 2; i++)
+				{
+
+					float xac = xa, xbc = xb, yac = ya, ybc = yb, zac = za, zbc = zb;
+					int index = (i + 2 * j + 2 * 2 * k);
+					root->child[index] = getNode();
+
+					if (i == 1)
+						xac += (xbc - xac) / 2;
+					else
+						xbc -= (xbc - xac) / 2;
+
+					if (j == 1)
+						yac += (ybc - yac) / 2;
+					else
+						ybc -= (ybc - yac) / 2;
+
+					if (k == 1)
+						zac += (zbc - zac) / 2;
+					else
+						zbc -= (zbc - zac) / 2;
+
+					//cout<<"x=("<<xac<<","<<xbc<<")\tleny=("<<yac<<" "<<ybc<<")\tlenz=("<<zac<<" "<<zbc<<")\n";
+					//exit(0);
+					Pair *p1 = initDST(root->child[index], xac, xbc, yac, ybc, zac, zbc);
+					if (p1->minval < p->minval)
+						p->minval = p1->minval;
+					if (p1->maxval > p->maxval)
+						p->maxval = p1->maxval;
+				}
+			}
+		}
+
+		root->min_iso = p->minval;
+		root->max_iso = p->maxval;
+		root->orig_Index = getIndex(0, xa, ya, za);
+		return p;
+	}
+}
+
+void printdst(dst *root, int level)
+{
+	//cout<<root<<endl;
+
+	if (root == NULL)
+		return;
+	cout << "level: " << level << "\tmin=" << root->min_iso << "\tmax=" << root->max_iso << "\torig_Index=" << root->orig_Index << "\n";
+	for (int i = 0; i < 8; i++)
+	{
+		printdst(root->child[i], level + 1);
+	}
 }
 
 static void CreateVertexBuffer()
 {
+	//cin>>iso;
+	iso=25;
+	//cout<<"iso="<<iso<<endl;
+	//exit(0);
 	FILE *input;
 	unsigned int x, y, z;
-	input = fopen("test.txt", "r");
+	input = fopen("fuel.txt", "r");
 	if (input == NULL)
 	{
 		cout << "error opening file";
@@ -377,20 +430,20 @@ static void CreateVertexBuffer()
 	fscanf(input, "%d", &y);
 	fscanf(input, "%d", &z);
 	cout << x << " " << y << " " << z << endl;
-	xinc=(float)1/x;
-	yinc=(float)1/y;
-	zinc=(float)1/z;
-	xmax=x+1;
-	ymax=y+1;
-	zmax=z+1;
-	cout<<" xinc:"<<xinc<<" yinc:"<<yinc<<" zinc:"<<zinc<<endl;
-	cout<<" xmax:"<<xmax<<" ymax:"<<ymax<<" zmax:"<<zmax<<endl;
+	xinc = (float)1 / x;
+	yinc = (float)1 / y;
+	zinc = (float)1 / z;
+	xmax = x + 1;
+	ymax = y + 1;
+	zmax = z + 1;
+	cout << " xinc:" << xinc << " yinc:" << yinc << " zinc:" << zinc << endl;
+	cout << " xmax:" << xmax << " ymax:" << ymax << " zmax:" << zmax << endl;
 	// int max=(x>y)?(x>z?x:z):(y>z?y:z);
 	// xmax=(float)x/max;
 	// ymax=(float)y/max;
 	// zmax=(float)z/max;
 
-	noOfvertices = (x+1) * (y+1) * (z+1);
+	noOfvertices = (x + 1) * (y + 1) * (z + 1);
 	vertices = new float[noOfvertices * 4];
 	newvertices = new Vector3f[noOfvertices * 36];
 	indices = new unsigned int[noOfvertices * 36];
@@ -401,92 +454,92 @@ static void CreateVertexBuffer()
 			for (int i = 0; i <= x; i++)
 			{
 				ll pos = k * y * x + j * x + i;
-				if(i==x || j==y || k==z){
-					vertices[4 * pos + 0] = ((float)i / (x - 1))/**((float)x/max)*/;
-					vertices[4 * pos + 1] = ((float)j / (y - 1))/**((float)y/max)*/;
-					vertices[4 * pos + 2] = ((float)k / (z - 1))/**((float)z/max)*/;
-					vertices[4 * pos + 3] = vertices[4* (pos-1) + 3];
+				if (i == x || j == y || k == z)
+				{
+					vertices[4 * pos + 0] = ((float)i / (x - 1)) /**((float)x/max)*/;
+					vertices[4 * pos + 1] = ((float)j / (y - 1)) /**((float)y/max)*/;
+					vertices[4 * pos + 2] = ((float)k / (z - 1)) /**((float)z/max)*/;
+					vertices[4 * pos + 3] = vertices[4 * (pos - 1) + 3];
+					continue;
 				}
-				vertices[4 * pos + 0] = ((float)i / (x - 1))/**((float)x/max)*/;
-				vertices[4 * pos + 1] = ((float)j / (y - 1))/**((float)y/max)*/;
-				vertices[4 * pos + 2] = ((float)k / (z - 1))/**((float)z/max)*/;
+				vertices[4 * pos + 0] = ((float)i / (x - 1)) /**((float)x/max)*/;
+				vertices[4 * pos + 1] = ((float)j / (y - 1)) /**((float)y/max)*/;
+				vertices[4 * pos + 2] = ((float)k / (z - 1)) /**((float)z/max)*/;
 				fscanf(input, "%f", &vertices[4 * pos + 3]);
 				//	data[t++]=vertices[4 * pos + 3];
 			}
 		}
 	}
 
-	dst *root=getNode();
-	Pair *p=initDST(root,0,1,0,1,0,1);
-	cout<<" min="<<p->minval<<" max="<<p->maxval<<"\n\n";
-	printdst(root,0);
-
-	exit(0);
-
+	dst *root = getNode();
+	Pair *p = initDST(root, 0, 1, 0, 1, 0, 1);
+	cout << " min=" << p->minval << " max=" << p->maxval << "\n\n";
+	cout<<"newindex="<<newindex<<endl;
+	//exit(0);
+//	printdst(root, 0);
 
 
 	ll newVIndex = 0;
-	for (int k = 0; k < z - 1; k++)
-	{
+	// for (int k = 0; k < z - 1; k++)
+	// {
 
-		for (int j = 0; j < y - 1; j++)
-		{
-			for (int i = 0; i < x - 1; i++)
-			{
-				
-				// for(int l=0;l<8;l++)cout<<cell[l]<<" ";
-				// cout<<endl;
-				tetra(getCell(i,j,k));
-			}
-		}
-	}
+	// 	for (int j = 0; j < y - 1; j++)
+	// 	{
+	// 		for (int i = 0; i < x - 1; i++)
+	// 		{
+
+	// 			// for(int l=0;l<8;l++)cout<<cell[l]<<" ";
+	// 			// cout<<endl;
+	// 		//	tetra(getCell(i, j, k));
+	// 		}
+	// 	}
+	// }
 	//cout<<newVIndex<<endl;
 	noOfIndices = newindex;
 	int t = 0;
-	for (int i = 0; i < newindex; i++)
-	{
+	// for (int i = 0; i < newindex; i++)
+	// {
 
-		if (!(newvertices[i].x >= 0 && newvertices[i].y >= 0 && newvertices[i].z >= 0))
-		{
-			t++;
-			cout << indices[i] << endl;
-			cout << newvertices[i].x << " " << newvertices[i].y << " " << newvertices[i].z << endl;
-		}
-	}
-	cout << newindex <<" "<<t<< endl;
+	// 	// if (!(newvertices[i].x >= 0 && newvertices[i].y >= 0 && newvertices[i].z >= 0))
+	// 	// {
+	// 	// 	t++;
+	// 	// 	cout << indices[i] << endl;
+	// 	// 	cout << newvertices[i].x << " " << newvertices[i].y << " " << newvertices[i].z << endl;
+	// 	// }
+	// 	cout << newvertices[i].x << " " << newvertices[i].y << " " << newvertices[i].z << endl;
+	// }
+	//cout << newindex << " " << t << endl;
 	// exit(0);
 
-
 	///////Generate cube
-	Vector3f cubevertices[8]={
-		Vector3f(0,0,0),
-		Vector3f(1,0,0),
-		Vector3f(0,1,0),
-		Vector3f(1,1,0),
-		Vector3f(0,0,1),
-		Vector3f(1,0,1),
-		Vector3f(0,1,1),
-		Vector3f(1,1,1)
+	Vector3f cubevertices[8] = {
+		Vector3f(0, 0, 0),
+		Vector3f(1, 0, 0),
+		Vector3f(0, 1, 0),
+		Vector3f(1, 1, 0),
+		Vector3f(0, 0, 1),
+		Vector3f(1, 0, 1),
+		Vector3f(0, 1, 1),
+		Vector3f(1, 1, 1)
 
 	};
 
-	unsigned int cubeindices[24]={
-		0,1,
-		0,2,
-		0,4,
-		1,3,
-		1,5,
-		2,3,
-		2,6,
-		3,7,
-		4,5,
-		4,6,
-		5,7,
-		6,7
-	};
+	unsigned int cubeindices[24] = {
+		0, 1,
+		0, 2,
+		0, 4,
+		1, 3,
+		1, 5,
+		2, 3,
+		2, 6,
+		3, 7,
+		4, 5,
+		4, 6,
+		5, 7,
+		6, 7};
 
-	glGenVertexArrays(1, &VAO);
-	glBindVertexArray(VAO);
+	GL_CALL(glGenVertexArrays(1, &VAO));
+	GL_CALL(glBindVertexArray(VAO));
 
 	GL_CALL(glGenBuffers(1, &VBO));
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBO));
@@ -502,10 +555,9 @@ static void CreateVertexBuffer()
 	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBO));
 	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, newindex * sizeof(unsigned int), indices, GL_STATIC_DRAW));
 
-
 	///For Cube
-	glGenVertexArrays(1, &VACube);
-	glBindVertexArray(VACube);
+	GL_CALL(glGenVertexArrays(1, &VACube));
+	GL_CALL(glBindVertexArray(VACube));
 
 	GL_CALL(glGenBuffers(1, &VBCube));
 	GL_CALL(glBindBuffer(GL_ARRAY_BUFFER, VBCube));
@@ -627,37 +679,39 @@ static void onDisplay()
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 	//glPointSize(5);
 
-	Matrix4f  scaleMat, translateMat, rotateMat, transformcube;
+	Matrix4f scaleMat, translateMat, rotateMat, transformcube;
 
 	transformcube.InitIdentity();
 
-	translateMat.InitTranslationTransform(-xmax/2,-ymax/2,-zmax/2);
-	transformcube=translateMat*transformcube;
+	translateMat.InitTranslationTransform(-0.5, -0.5, -0.5);
+	transformcube = translateMat * transformcube;
 
-	rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),M_PI);
-	transformcube=rotateMat*transformcube;
+	// rotateMat.InitAxisRotateTransform(Vector3f(0, 0, 1), M_PI);
+	// transformcube = rotateMat * transformcube;
 
-	scaleMat.InitScaleTransform(1.3f, 1.3f, 1.3f);
-	 transformcube = scaleMat * transformcube;
+	// scaleMat.InitScaleTransform(1.3f, 1.3f, 1.3f);
+	// transformcube = scaleMat * transformcube;
 
-	if(choice==1){
-		rotateMat.InitAxisRotateTransform(Vector3f(1,0,0),rotateX);
-		transformcube=rotateMat*transformcube;
+	if (choice == 1)
+	{
+		rotateMat.InitAxisRotateTransform(Vector3f(1, 0, 0), rotateX);
+		transformcube = rotateMat * transformcube;
 	}
 
-	if(choice==2){
-		rotateMat.InitAxisRotateTransform(Vector3f(0,1,0),rotateY);
-		transformcube=rotateMat*transformcube;
+	if (choice == 2)
+	{
+		rotateMat.InitAxisRotateTransform(Vector3f(0, 1, 0), rotateY);
+		transformcube = rotateMat * transformcube;
 	}
 
-	if(choice==3){
-		rotateMat.InitAxisRotateTransform(Vector3f(0,0,1),rotateZ);
-		transformcube=rotateMat*transformcube;
-	
+	if (choice == 3)
+	{
+		rotateMat.InitAxisRotateTransform(Vector3f(0, 0, 1), rotateZ);
+		transformcube = rotateMat * transformcube;
 	}
 
 	translateMat.InitTranslationTransform(0.0f, 0.0f, +1.8f);
-	transformcube=translateMat*transformcube;
+	transformcube = translateMat * transformcube;
 
 	Matrix4f persProjection;
 	PersProjInfo proj(90.0f, 1.0f, 1.0f, +1.0f, -1.0f);
@@ -665,20 +719,21 @@ static void onDisplay()
 	transformcube = persProjection * transformcube;
 
 	//////Cube
-	
+
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transformcube.m[0][0]);
-	glUniform3f(objColor_location, 0,0,0);
+	glUniform3f(objColor_location, 0, 0, 0);
 	glBindVertexArray(VACube);
 	glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, nullptr);
-	
+
 	/////object
+	scaleMat.InitScaleTransform(1, 1, (zmax-1)/zmax);
+	transformcube = scaleMat * transformcube;
+
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transformcube.m[0][0]);
-	glUniform3f(objColor_location, 1,0,0);
+	glUniform3f(objColor_location, 1, 0, 0);
 	glBindVertexArray(VAO);
 	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	glDrawElements(GL_TRIANGLES, noOfIndices, GL_UNSIGNED_INT, nullptr);
-
-	
 
 	/* check for any errors when rendering */
 	GLenum errorCode = glGetError();
@@ -767,18 +822,18 @@ static void onAlphaNumericKeyPress(unsigned char key, int x, int y)
 		break;
 		/* reset */
 	case '1':
-		choice=1;
-		rotateX+=0.05;
+		choice = 1;
+		rotateX += 0.05;
 		break;
 
 	case '2':
-		choice=2;
-		rotateY+=0.05;
+		choice = 2;
+		rotateY += 0.05;
 		break;
 
 	case '3':
-		choice=3;
-		rotateZ+=0.05;
+		choice = 3;
+		rotateZ += 0.05;
 		break;
 
 	case 'r':
