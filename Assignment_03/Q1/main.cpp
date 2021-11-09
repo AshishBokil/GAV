@@ -43,7 +43,7 @@ const char *pFSFileName = "shader.fs";
 
  */
 
-float xmax, ymax, zmax, xinc, yinc, zinc,iso;
+float xmax, ymax, zmax, xinc, yinc, zinc, iso;
 Matrix4f World;
 float *vertices;
 Vector3f *newvertices;
@@ -61,32 +61,32 @@ ll thIndices[6][4] = {
 
 };
 
-	///////Generate cube
-	Vector3f cubevertices[8] = {
-		Vector3f(0, 0, 0),
-		Vector3f(1, 0, 0),
-		Vector3f(0, 1, 0),
-		Vector3f(1, 1, 0),
-		Vector3f(0, 0, 1),
-		Vector3f(1, 0, 1),
-		Vector3f(0, 1, 1),
-		Vector3f(1, 1, 1)
+///////Generate cube
+Vector3f cubevertices[8] = {
+	Vector3f(0, 0, 0),
+	Vector3f(1, 0, 0),
+	Vector3f(0, 1, 0),
+	Vector3f(1, 1, 0),
+	Vector3f(0, 0, 1),
+	Vector3f(1, 0, 1),
+	Vector3f(0, 1, 1),
+	Vector3f(1, 1, 1)
 
-	};
+};
 
-	unsigned int cubeindices[24] = {
-		0, 1,
-		0, 2,
-		0, 4,
-		1, 3,
-		1, 5,
-		2, 3,
-		2, 6,
-		3, 7,
-		4, 5,
-		4, 6,
-		5, 7,
-		6, 7};
+unsigned int cubeindices[24] = {
+	0, 1,
+	0, 2,
+	0, 4,
+	1, 3,
+	1, 5,
+	2, 3,
+	2, 6,
+	3, 7,
+	4, 5,
+	4, 6,
+	5, 7,
+	6, 7};
 
 /***********  domainSearchTree *******/
 
@@ -211,14 +211,9 @@ static void find_triangles(ll th[])
 	{
 		for (int j = i + 1; j < 4; j++)
 		{
-			//for(int k=j+1;k<4;k++){
 
 			v1 = Vector4f(vertices[4 * th[i]], vertices[4 * th[i] + 1], vertices[4 * th[i] + 2], vertices[4 * th[i] + 3]);
 			v2 = Vector4f(vertices[4 * th[j]], vertices[4 * th[j] + 1], vertices[4 * th[j] + 2], vertices[4 * th[j] + 3]);
-			//v3=Vector4f(	vertices[4*th[k]],vertices[4*th[k]+1],vertices[4*th[k]+2]	,vertices[4*th[k]+3]);
-			// cout<<4*th[i]<<" "<<4*th[j]<<" "<<endl;
-			//  cout<<"v1="<<v1.x<<" "<<v1.y<<" "<<v1.z<<" :"<<v1.w<<endl;
-			//  cout<<"v2="<<v2.x<<" "<<v2.y<<" "<<v2.z<<" :"<<v2.w<<endl;
 
 			if (v1.w >= v && v2.w < v || v1.w < v && v2.w >= v)
 			{
@@ -268,7 +263,7 @@ static void find_triangles(ll th[])
 	//	exit(0);
 }
 
-static void tetra(ll* cell)
+static void tetra(ll *cell)
 {
 	//cout<<"checkpoint2"<<endl;
 	for (int i = 0; i < 6; i++)
@@ -280,13 +275,11 @@ static void tetra(ll* cell)
 			cell[thIndices[i][3]]
 
 		};
-		// for(int j=0;j<4;j++)cout<<th[j]<<" ";
-		// 	cout<<endl;
 		find_triangles(th);
 	}
 }
 
-void getCell(ll* cell,int i, int j, int k)
+void getCell(ll *cell, int i, int j, int k)
 {
 	//ll cell[8];
 
@@ -298,68 +291,64 @@ void getCell(ll* cell,int i, int j, int k)
 	cell[5] = ((i + 1) + xmax * j + xmax * ymax * (k + 1));
 	cell[6] = (i + xmax * (j + 1) + xmax * ymax * (k + 1));
 	cell[7] = ((i + 1) + xmax * (j + 1) + xmax * ymax * (k + 1));
-
-	// for(int i=0;i<8;i++){
-	// 	cout<<cell[i]<<endl;
-	// }
-//	return cell;
 }
 
-void getCellWithIndex(ll* cell,ll index)
+void getCellWithIndex(ll *cell, ll index)
 {
 	//ll cell[8];
 
 	cell[0] = index;
-	cell[1] = index+1;
-	cell[2] = index+ymax;
-	cell[3] = index+1+ymax;
-	cell[4] = index+xmax*ymax;
-	cell[5] = index+1+xmax*ymax;
-	cell[6] = index+ymax+xmax*ymax;
-	cell[7] = index+1+ymax+xmax*ymax;
-
-	// for(int i=0;i<8;i++){
-	// 	cout<<cell[i]<<endl;
-	// }
-//	return cell;
+	cell[1] = index + 1;
+	cell[2] = index + ymax;
+	cell[3] = index + 1 + ymax;
+	cell[4] = index + xmax * ymax;
+	cell[5] = index + 1 + xmax * ymax;
+	cell[6] = index + ymax + xmax * ymax;
+	cell[7] = index + 1 + ymax + xmax * ymax;
 }
 
-void dstSearch(dst *root,int level){
-	if(root->child[0]==NULL ){
-		if(root->min_iso<=iso && root->max_iso>=iso){
-		//	cout<<"Origin index="<<root->orig_Index<<"\n\n";
+void dstSearch(dst *root, int level)
+{
+	if (root->child[0] == NULL)
+	{
+		if (root->min_iso <= iso && root->max_iso >= iso)
+		{
+			//	cout<<"Origin index="<<root->orig_Index<<"\n\n";
 			ll cell[8];
-			getCellWithIndex(cell,root->orig_Index);
+			getCellWithIndex(cell, root->orig_Index);
 			//printcell(cell);
-			 tetra(cell);
+			tetra(cell);
 		}
 	}
 
-	else{
-		for(int i=0;i<8;i++){
-			if(root->child[i]->min_iso<=iso && root->child[i]->max_iso>=iso){
-			//	cout<<"level="<< level <<"  Origin index(="<< root->orig_Index <<"\n\n";
-				dstSearch(root->child[i],level+1);
-				
+	else
+	{
+		for (int i = 0; i < 8; i++)
+		{
+			if (root->child[i]->min_iso <= iso && root->child[i]->max_iso >= iso)
+			{
+				//	cout<<"level="<< level <<"  Origin index(="<< root->orig_Index <<"\n\n";
+				dstSearch(root->child[i], level + 1);
 			}
 		}
 	}
 }
 
-void printcell(ll* cell){
+void printcell(ll *cell)
+{
 	//cout<<" pointer ="<<cell<<endl;
-	for(int i=0;i<8;i++){
-		cout<<cell[i]<<endl;
+	for (int i = 0; i < 8; i++)
+	{
+		cout << cell[i] << endl;
 	}
 }
-
 
 Pair *initDST(dst *root, float xa, float xb, float ya, float yb, float za, float zb)
 {
 	//cout<<"lenx="<<xb-xa<<" leny="<<yb-ya<<" lenz="<<zb-za<<endl;
 	//if(xb-xa<xinc)return NULL;
 	int i = (int)(xa / xinc), j = (int)(ya / yinc), k = (int)(za / zinc);
-	ll rootIndex=getIndex(0,i,j,k);
+	ll rootIndex = getIndex(0, i, j, k);
 	root->orig_Index = rootIndex;
 
 	if (xb == 1 && (xb - xa) == xinc || yb == 1 && (yb - ya) == yinc || zb == 1 && (zb - za) == zinc)
@@ -402,7 +391,7 @@ Pair *initDST(dst *root, float xa, float xb, float ya, float yb, float za, float
 		// 	getCell(cell,i,j,k);
 		// 	//printcell(cell);
 		// 	 tetra(cell);
-		// }		
+		// }
 
 		//root->orig_Index = 4 * getIndex(0, i, j, k);
 		//	cout<<"Origin index="<<root->orig_Index<<"\n\n";
@@ -456,14 +445,16 @@ Pair *initDST(dst *root, float xa, float xb, float ya, float yb, float za, float
 
 		root->min_iso = p->minval;
 		root->max_iso = p->maxval;
-	//	root->orig_Index = getIndex(0, xa, ya, za);
+		//	root->orig_Index = getIndex(0, xa, ya, za);
 		return p;
 	}
 }
 
-void printchildIndexes(dst *root,int level){
-	if(root->child[0]==NULL){
-		cout<<"level: "<<level<<"  "<<root->orig_Index<<" ->\n ";
+void printchildIndexes(dst *root, int level)
+{
+	if (root->child[0] == NULL)
+	{
+		cout << "level: " << level << "  " << root->orig_Index << " ->\n ";
 		return;
 	}
 	//cout<<"level: "<<level<<"  "<<root->orig_Index<<" -> ";
@@ -472,11 +463,10 @@ void printchildIndexes(dst *root,int level){
 	// }
 	//cout<<endl;
 
-	for(int i=0;i<8;i++){
-		printchildIndexes(root->child[i],level+1);
+	for (int i = 0; i < 8; i++)
+	{
+		printchildIndexes(root->child[i], level + 1);
 	}
-
-
 }
 void printdst(dst *root, int level)
 {
@@ -494,13 +484,13 @@ void printdst(dst *root, int level)
 static void CreateVertexBuffer()
 {
 	//cin>>iso;
-	iso=49;
-	v=iso;
+	iso = 49;
+	v = iso;
 	//cout<<"iso="<<iso<<endl;
 	//exit(0);
 	FILE *input;
 	unsigned int x, y, z;
-	input = fopen("hydrogen.txt", "r");
+	input = fopen("lob.txt", "r");
 	if (input == NULL)
 	{
 		cout << "error opening file";
@@ -518,10 +508,6 @@ static void CreateVertexBuffer()
 	zmax = z + 1;
 	cout << " xinc:" << xinc << " yinc:" << yinc << " zinc:" << zinc << endl;
 	cout << " xmax:" << xmax << " ymax:" << ymax << " zmax:" << zmax << endl;
-	// int max=(x>y)?(x>z?x:z):(y>z?y:z);
-	// xmax=(float)x/max;
-	// ymax=(float)y/max;
-	// zmax=(float)z/max;
 
 	noOfvertices = (x + 1) * (y + 1) * (z + 1);
 	vertices = new float[noOfvertices * 4];
@@ -550,50 +536,29 @@ static void CreateVertexBuffer()
 			}
 		}
 	}
-
-		
-
-	ll newVIndex = 0;
-	
-	//int t = 0;
-	// for (int i = 0; i < newindex; i++)
-	// {
-
-	// 	// if (!(newvertices[i].x >= 0 && newvertices[i].y >= 0 && newvertices[i].z >= 0))
-	// 	// {
-	// 	// 	t++;
-	// 	// 	cout << indices[i] << endl;
-	// 	// 	cout << newvertices[i].x << " " << newvertices[i].y << " " << newvertices[i].z << endl;
-	// 	// }
-	// 	cout << newvertices[i].x << " " << newvertices[i].y << " " << newvertices[i].z << endl;
-	// }
-	//cout << newindex << " " << t << endl;
-	// exit(0);
-
-
-
-	
 }
 
-void getData(){
+void getData()
+{
 
 	newvertices = new Vector3f[noOfvertices * 36];
 	indices = new unsigned int[noOfvertices * 36];
-	newindex=0;
+	newindex = 0;
 	dst *root = getNode();
 	Pair *p = initDST(root, 0, 1, 0, 1, 0, 1);
-	 dstSearch(root,0);
+	dstSearch(root, 0);
 	//printchildIndexes(root,0);
 
 	//cout << " min=" << p->minval << " max=" << p->maxval << "\n\n";
-	cout<<"iso="<<iso<<endl;
-	cout<<"newindex="<<newindex<<endl;
-//	exit(0);
-//	printdst(root, 0);
+	cout << "iso=" << iso << endl;
+	cout << "newindex=" << newindex << endl;
+	//	exit(0);
+	//	printdst(root, 0);
 	noOfIndices = newindex;
 }
 
-void parseBuffers(){
+void parseBuffers()
+{
 	GL_CALL(glGenVertexArrays(1, &VAO));
 	GL_CALL(glBindVertexArray(VAO));
 
@@ -625,7 +590,6 @@ void parseBuffers(){
 	GL_CALL(glGenBuffers(1, &IBCube));
 	GL_CALL(glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, IBCube));
 	GL_CALL(glBufferData(GL_ELEMENT_ARRAY_BUFFER, 24 * sizeof(unsigned int), cubeindices, GL_STATIC_DRAW));
-
 }
 
 static void AddShader(GLuint ShaderProgram, const char *pShaderText, GLenum ShaderType)
@@ -785,7 +749,7 @@ static void onDisplay()
 	glDrawElements(GL_LINES, 24, GL_UNSIGNED_INT, nullptr);
 
 	/////object
-	scaleMat.InitScaleTransform(1, 1, (zmax-1)/zmax);
+	scaleMat.InitScaleTransform(1, 1, (zmax - 1) / zmax);
 	transformcube = scaleMat * transformcube;
 
 	glUniformMatrix4fv(gWorldLocation, 1, GL_TRUE, &transformcube.m[0][0]);
@@ -861,7 +825,7 @@ static void onMouseButtonPress(int button, int state, int x, int y)
 		// Left button pressed
 		//	glutPostRedisplay();
 		iso++;
-		v=iso;
+		v = iso;
 	}
 	if (button == GLUT_LEFT_BUTTON && state == GLUT_UP)
 	{
@@ -902,15 +866,15 @@ static void onAlphaNumericKeyPress(unsigned char key, int x, int y)
 	case '4':
 		//choice = 3;
 		//rotateZ += 0.05;
-		iso=iso+5;
-		v=iso;
+		iso = iso + 5;
+		v = iso;
 		getData();
 		parseBuffers();
 		break;
 
 	case '6':
-		iso=iso-5;
-		v=iso;
+		iso = iso - 5;
+		v = iso;
 		getData();
 		parseBuffers();
 		break;
